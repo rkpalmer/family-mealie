@@ -12,6 +12,30 @@ The browser talks only to Home Assistant. Home Assistant talks to Mealie locally
 - No Mealie token in frontend JavaScript.
 - Works with externally accessible Home Assistant because Mealie remains local-only.
 
+## Install With HACS
+
+Once this code is pushed to GitHub, add it as a HACS custom repository:
+
+1. Open **HACS** in Home Assistant.
+2. Open the top-right menu.
+3. Choose **Custom repositories**.
+4. Repository:
+
+```text
+https://github.com/YOUR_GITHUB_USER/family-mealie
+```
+
+5. Category:
+
+```text
+Integration
+```
+
+6. Download the integration.
+7. Restart Home Assistant.
+
+This must be installed as an **Integration**, not as a Dashboard/plugin repository, because the Home Assistant backend bridge is what keeps Mealie local-only.
+
 ## Install Manually
 
 Copy this folder into Home Assistant:
