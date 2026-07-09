@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Family Mealie",
+        "description": "Connect Home Assistant to your local-only Mealie instance. The Authorization header is stored server-side.",
+        "data": {
+          "name": "Name",
+          "url": "Mealie URL",
+          "auth_header": "Authorization header"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to Mealie with this URL and authorization header.",
+      "unknown": "Unexpected error."
+    }
+  }
+}
