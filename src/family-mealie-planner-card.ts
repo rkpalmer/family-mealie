@@ -72,10 +72,23 @@ interface SlotContext {
   entryType: string;
 }
 
+interface ManualRecipeForm {
+  name: string;
+  source: string;
+  description: string;
+  servings: string;
+  prep: string;
+  cook: string;
+  total: string;
+  ingredients: string;
+  instructions: string;
+}
+
 type MainView = "planner" | "recipes" | "groceries";
+type RecipeCreateMode = "url" | "manual";
 
 const DEFAULT_ENTRY_TYPES = ["breakfast", "lunch", "dinner"];
-const QUICK_NOTES = ["Leftovers", "Eat Out", "Freezer Meal"];
+const QUICK_NOTES = ["Leftovers:", "Eat Out:", "Freezer Meal:", "Kids:"];
 
 @customElement("family-mealie-planner-card")
 export class FamilyMealiePlannerCard extends LitElement {
@@ -104,6 +117,20 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private noteEditText = "";
   @state() private noteSaving = false;
   @state() private selectedRecipe?: RecipeSummary;
+  @state() private plannerOffsetDays = 0;
+  @state() private recipeCreateMode: RecipeCreateMode = "url";
+  @state() private recipeUrl = "";
+  @state() private manualRecipeName = "";
+  @state() private manualRecipeSource = "";
+  @state() private manualRecipeDescription = "";
+  @state() private manualRecipeServings = "";
+  @state() private manualRecipePrep = "";
+  @state() private manualRecipeCook = "";
+  @state() private manualRecipeTotal = "";
+  @state() private manualRecipeIngredients = "";
+  @state() private manualRecipeInstructions = "";
+  @state() private recipeSaving = false;
+  @state() private recipeMessage?: string;
   @state() private groceryText = "";
   @state() private newListName = "";
 
@@ -201,6 +228,11 @@ export class FamilyMealiePlannerCard extends LitElement {
     const days = this.daysToShow();
 
     return html`
+      <div class="planner-nav">
+        <button class="plain" @click=${() => this.shiftPlannerRange(-this.rangeStepDays())}>Previous week</button>
+        <button class="plain" @click=${this.resetPlannerRange} ?disabled=${this.plannerOffsetDays === 0}>This week</button>
+        <button class="plain" @click=${() => this.shiftPlannerRange(this.rangeStepDays())}>Next week</button>
+      </div>
       <div class="board" style=${`--day-count:${days.length}`}>
         ${days.map((day) => this.renderDay(day))}
       </div>
@@ -269,6 +301,22 @@ export class FamilyMealiePlannerCard extends LitElement {
     const recipes = this.filteredRecipes();
 
     return html`
+      <section class="recipe-create-panel">
+        <header>
+          <h3>Add recipe</h3>
+          <div class="mode-tabs">
+            <button class=${this.recipeCreateMode === "url" ? "active" : ""} @click=${() => (this.recipeCreateMode = "url")}>
+              Import URL
+            </button>
+            <button class=${this.recipeCreateMode === "manual" ? "active" : ""} @click=${() => (this.recipeCreateMode = "manual")}>
+              Manual
+            </button>
+          </div>
+        </header>
+        ${this.recipeMessage ? html`<div class="success">${this.recipeMessage}</div>` : nothing}
+        ${this.recipeCreateMode === "url" ? this.renderRecipeUrlCreate() : this.renderRecipeManualCreate()}
+      </section>
+
       <div class="recipe-toolbar">
         <label>
           Search recipes
@@ -290,6 +338,117 @@ export class FamilyMealiePlannerCard extends LitElement {
             </button>
           `,
         )}
+      </div>
+    `;
+  }
+
+  private renderRecipeUrlCreate() {
+    return html`
+      <div class="recipe-url-row">
+        <label>
+          Recipe URL
+          <input
+            type="url"
+            placeholder="https://..."
+            .value=${this.recipeUrl}
+            @input=${(event: InputEvent) => (this.recipeUrl = inputValue(event))}
+          />
+        </label>
+        <button class="primary" @click=${this.importRecipeUrl} ?disabled=${this.recipeSaving || !this.recipeUrl.trim()}>
+          ${this.recipeSaving ? "Importing" : "Import"}
+        </button>
+      </div>
+    `;
+  }
+
+  private renderRecipeManualCreate() {
+    return html`
+      <div class="manual-recipe-form">
+        <label>
+          Name
+          <input
+            type="text"
+            placeholder="Chicken soup"
+            .value=${this.manualRecipeName}
+            @input=${(event: InputEvent) => (this.manualRecipeName = inputValue(event))}
+          />
+        </label>
+        <label>
+          Source URL
+          <input
+            type="url"
+            placeholder="https://..."
+            .value=${this.manualRecipeSource}
+            @input=${(event: InputEvent) => (this.manualRecipeSource = inputValue(event))}
+          />
+        </label>
+        <label class="span-2">
+          Description
+          <textarea
+            .value=${this.manualRecipeDescription}
+            @input=${(event: InputEvent) => (this.manualRecipeDescription = inputValue(event))}
+          ></textarea>
+        </label>
+        <div class="time-grid span-2">
+          <label>
+            Servings
+            <input
+              type="number"
+              min="0"
+              inputmode="numeric"
+              .value=${this.manualRecipeServings}
+              @input=${(event: InputEvent) => (this.manualRecipeServings = inputValue(event))}
+            />
+          </label>
+          <label>
+            Prep
+            <input
+              type="text"
+              placeholder="15 min"
+              .value=${this.manualRecipePrep}
+              @input=${(event: InputEvent) => (this.manualRecipePrep = inputValue(event))}
+            />
+          </label>
+          <label>
+            Cook
+            <input
+              type="text"
+              placeholder="30 min"
+              .value=${this.manualRecipeCook}
+              @input=${(event: InputEvent) => (this.manualRecipeCook = inputValue(event))}
+            />
+          </label>
+          <label>
+            Total
+            <input
+              type="text"
+              placeholder="45 min"
+              .value=${this.manualRecipeTotal}
+              @input=${(event: InputEvent) => (this.manualRecipeTotal = inputValue(event))}
+            />
+          </label>
+        </div>
+        <label>
+          Ingredients
+          <textarea
+            class="tall"
+            .value=${this.manualRecipeIngredients}
+            @input=${(event: InputEvent) => (this.manualRecipeIngredients = inputValue(event))}
+          ></textarea>
+        </label>
+        <label>
+          Instructions
+          <textarea
+            class="tall"
+            .value=${this.manualRecipeInstructions}
+            @input=${(event: InputEvent) => (this.manualRecipeInstructions = inputValue(event))}
+          ></textarea>
+        </label>
+        <footer class="span-2">
+          <button class="primary" @click=${this.createManualRecipe} ?disabled=${this.recipeSaving || !this.manualRecipeName.trim()}>
+            ${this.recipeSaving ? "Saving" : "Save recipe"}
+          </button>
+        </footer>
       </div>
     `;
   }
@@ -625,6 +784,60 @@ export class FamilyMealiePlannerCard extends LitElement {
     return normalizeRecipeDetail(response, this.imageToken);
   }
 
+  private async importRecipeUrl(event: Event): Promise<void> {
+    event.preventDefault();
+    const url = this.recipeUrl.trim();
+    if (!url) return;
+
+    this.recipeSaving = true;
+    this.recipeMessage = undefined;
+    this.error = undefined;
+    try {
+      await this.callFamilyMealie("family_mealie/recipes/import_url", {
+        url,
+        include_tags: true,
+        include_categories: true,
+      });
+      this.recipeUrl = "";
+      this.recipeMessage = "Recipe imported.";
+      await this.loadRecipes();
+    } catch (error) {
+      this.error = errorMessage(error, "Could not import recipe.");
+    } finally {
+      this.recipeSaving = false;
+    }
+  }
+
+  private async createManualRecipe(event: Event): Promise<void> {
+    event.preventDefault();
+    const payload = manualRecipePayload({
+      name: this.manualRecipeName,
+      source: this.manualRecipeSource,
+      description: this.manualRecipeDescription,
+      servings: this.manualRecipeServings,
+      prep: this.manualRecipePrep,
+      cook: this.manualRecipeCook,
+      total: this.manualRecipeTotal,
+      ingredients: this.manualRecipeIngredients,
+      instructions: this.manualRecipeInstructions,
+    });
+    if (!payload.name) return;
+
+    this.recipeSaving = true;
+    this.recipeMessage = undefined;
+    this.error = undefined;
+    try {
+      await this.callFamilyMealie("family_mealie/recipes/create", { payload });
+      this.clearManualRecipeForm();
+      this.recipeMessage = "Recipe saved.";
+      await this.loadRecipes();
+    } catch (error) {
+      this.error = errorMessage(error, "Could not save recipe.");
+    } finally {
+      this.recipeSaving = false;
+    }
+  }
+
   private async addMeal(event: Event): Promise<void> {
     event.preventDefault();
     if (!this.selectedSlot) return;
@@ -786,6 +999,38 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
   }
 
+  private async shiftPlannerRange(days: number): Promise<void> {
+    this.plannerOffsetDays += days;
+    await this.reloadPlannerRange();
+  }
+
+  private resetPlannerRange = async (): Promise<void> => {
+    this.plannerOffsetDays = 0;
+    await this.reloadPlannerRange();
+  };
+
+  private async reloadPlannerRange(): Promise<void> {
+    if (!this.hass) return;
+    this.error = undefined;
+    try {
+      await this.loadMealPlan();
+    } catch (error) {
+      this.error = errorMessage(error, "Could not load meals for this week.");
+    }
+  }
+
+  private clearManualRecipeForm(): void {
+    this.manualRecipeName = "";
+    this.manualRecipeSource = "";
+    this.manualRecipeDescription = "";
+    this.manualRecipeServings = "";
+    this.manualRecipePrep = "";
+    this.manualRecipeCook = "";
+    this.manualRecipeTotal = "";
+    this.manualRecipeIngredients = "";
+    this.manualRecipeInstructions = "";
+  }
+
   private openAddDialog(slot: SlotContext): void {
     this.selectedSlot = slot;
     this.selectedRecipe = undefined;
@@ -897,7 +1142,12 @@ export class FamilyMealiePlannerCard extends LitElement {
   private daysToShow(): Date[] {
     const count = Math.max(1, Math.min(14, this.config.days ?? 7));
     const today = startOfDay(new Date());
-    return Array.from({ length: count }, (_, index) => addDays(today, index));
+    const start = addDays(today, this.plannerOffsetDays);
+    return Array.from({ length: count }, (_, index) => addDays(start, index));
+  }
+
+  private rangeStepDays(): number {
+    return Math.max(1, Math.min(14, this.config.days ?? 7));
   }
 
   private entryTypes(): string[] {
@@ -1150,6 +1400,13 @@ export class FamilyMealiePlannerCard extends LitElement {
       padding: 6px 0;
     }
 
+    .planner-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
     .empty-day {
       min-height: 150px;
       display: grid;
@@ -1219,8 +1476,80 @@ export class FamilyMealiePlannerCard extends LitElement {
       font-size: 13px;
     }
 
+    .recipe-create-panel,
     .recipe-toolbar {
       margin-top: 18px;
+    }
+
+    .recipe-create-panel {
+      display: grid;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid var(--meal-card-line);
+      border-radius: var(--meal-card-radius);
+      background: color-mix(in srgb, var(--meal-card-surface) 94%, var(--primary-background-color, #f6f6f6));
+    }
+
+    .recipe-create-panel header,
+    .manual-recipe-form footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .mode-tabs {
+      display: inline-flex;
+      gap: 6px;
+      padding: 5px;
+      border: 1px solid var(--meal-card-line);
+      border-radius: var(--meal-card-radius);
+      background: var(--meal-card-surface);
+    }
+
+    .mode-tabs button {
+      min-height: 40px;
+      border: 0;
+      padding: 0 12px;
+      background: transparent;
+      font-weight: 800;
+    }
+
+    .mode-tabs button.active {
+      background: color-mix(in srgb, var(--meal-card-accent) 12%, var(--meal-card-surface));
+      color: var(--meal-card-accent);
+    }
+
+    .recipe-url-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .manual-recipe-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .span-2 {
+      grid-column: 1 / -1;
+    }
+
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .success {
+      padding: 10px 12px;
+      border: 1px solid color-mix(in srgb, var(--meal-card-accent) 35%, transparent);
+      border-radius: var(--meal-card-radius);
+      color: var(--meal-card-accent);
+      background: color-mix(in srgb, var(--meal-card-accent) 8%, var(--meal-card-surface));
+      font-weight: 750;
     }
 
     .recipe-grid {
@@ -1420,6 +1749,10 @@ export class FamilyMealiePlannerCard extends LitElement {
       resize: vertical;
     }
 
+    textarea.tall {
+      min-height: 190px;
+    }
+
     .recipe-results {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -1574,9 +1907,15 @@ export class FamilyMealiePlannerCard extends LitElement {
       }
 
       .field-row,
+      .manual-recipe-form,
+      .recipe-url-row,
       .stats,
       .grocery-layout {
         grid-template-columns: 1fr;
+      }
+
+      .time-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
   `;
@@ -1728,6 +2067,58 @@ function mealPlanNotePayload(meal: MealPlanItem, title: string, text: string): R
     text,
     recipeId: raw.recipeId ?? raw.recipe_id ?? null,
   });
+}
+
+function manualRecipePayload(form: ManualRecipeForm): Record<string, unknown> & { name: string } {
+  const servings = positiveNumber(form.servings);
+  const ingredients = textLines(form.ingredients);
+  const instructions = textLines(form.instructions);
+
+  return {
+    name: form.name.trim(),
+    ...compactObject({
+      description: form.description.trim(),
+      orgURL: form.source.trim(),
+      recipeServings: servings,
+      recipeYield: servings ? `${servings} servings` : undefined,
+      prepTime: timeText(form.prep),
+      cookTime: timeText(form.cook),
+      totalTime: timeText(form.total),
+      recipeIngredient: ingredients.length
+        ? ingredients.map((line) => ({
+            note: line,
+            display: line,
+            originalText: line,
+          }))
+        : undefined,
+      recipeInstructions: instructions.length
+        ? instructions.map((line) => ({
+            title: "",
+            summary: "",
+            text: line,
+            ingredientReferences: [],
+          }))
+        : undefined,
+    }),
+  };
+}
+
+function textLines(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function positiveNumber(value: string): number | undefined {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function timeText(value: string): string | undefined {
+  const text = value.trim();
+  if (!text) return undefined;
+  return /^\d+$/.test(text) ? `${text} min` : text;
 }
 
 function normalizeIngredients(value: unknown): string[] {

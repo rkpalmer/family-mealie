@@ -64,6 +64,48 @@ class FamilyMealieClient:
 
         return await self.get(f"/api/recipes/{quote(slug, safe='')}")
 
+    async def create_recipe(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Create a recipe and optionally fill in quick-entry details."""
+
+        name = str(payload.get("name", "")).strip()
+        if not name:
+            raise FamilyMealieApiError("Recipe name is required.")
+
+        slug_result = await self.post("/api/recipes", json={"name": name})
+        slug = response_slug(slug_result)
+        recipe = await self.recipe(slug)
+        update_payload = recipe | compact(
+            {
+                "name": name,
+                "description": payload.get("description"),
+                "orgURL": payload.get("orgURL") or payload.get("org_url"),
+                "recipeServings": payload.get("recipeServings") or payload.get("recipe_servings"),
+                "recipeYield": payload.get("recipeYield") or payload.get("recipe_yield"),
+                "prepTime": payload.get("prepTime") or payload.get("prep_time"),
+                "cookTime": payload.get("cookTime") or payload.get("cook_time"),
+                "totalTime": payload.get("totalTime") or payload.get("total_time"),
+                "recipeIngredient": payload.get("recipeIngredient") or payload.get("recipe_ingredient"),
+                "recipeInstructions": payload.get("recipeInstructions") or payload.get("recipe_instructions"),
+            }
+        )
+        return await self.put_with_alias_fallback(f"/api/recipes/{quote(slug, safe='')}", update_payload)
+
+    async def import_recipe_url(
+        self,
+        url: str,
+        include_tags: bool = False,
+        include_categories: bool = False,
+    ) -> dict[str, Any]:
+        """Import a recipe from a URL using Mealie's server-side scraper."""
+
+        payload = {
+            "url": url,
+            "includeTags": include_tags,
+            "includeCategories": include_categories,
+        }
+        result = await self.post_with_alias_fallback("/api/recipes/create/url", payload, timeout=90)
+        return {"slug": response_slug(result)}
+
     async def recipe_image(self, recipe_id: str) -> MealieImage:
         """Return a recipe image by recipe id."""
 
@@ -160,25 +202,25 @@ class FamilyMealieClient:
 
         return await self.request("GET", path, params=params)
 
-    async def post(self, path: str, json: Any | None = None) -> dict[str, Any]:
+    async def post(self, path: str, json: Any | None = None, timeout: int = DEFAULT_TIMEOUT) -> Any:
         """POST JSON to Mealie."""
 
-        return await self.request("POST", path, json=json)
+        return await self.request("POST", path, json=json, timeout=timeout)
 
     async def put(self, path: str, json: Any | None = None) -> dict[str, Any]:
         """PUT JSON to Mealie."""
 
         return await self.request("PUT", path, json=json)
 
-    async def post_with_alias_fallback(self, path: str, payload: Any) -> dict[str, Any]:
+    async def post_with_alias_fallback(self, path: str, payload: Any, timeout: int = DEFAULT_TIMEOUT) -> Any:
         """POST JSON, retrying with snake_case aliases when Mealie rejects field names."""
 
         try:
-            return await self.post(path, json=payload)
+            return await self.post(path, json=payload, timeout=timeout)
         except FamilyMealieApiError as err:
             if not looks_like_validation_error(err):
                 raise
-            return await self.post(path, json=camel_to_snake(payload))
+            return await self.post(path, json=camel_to_snake(payload), timeout=timeout)
 
     async def put_with_alias_fallback(self, path: str, payload: Any) -> dict[str, Any]:
         """PUT JSON, retrying with snake_case aliases when Mealie rejects field names."""
@@ -203,6 +245,7 @@ class FamilyMealieClient:
         params: dict[str, Any] | None = None,
         json: Any | None = None,
         raw_response: bool = False,
+        timeout: int = DEFAULT_TIMEOUT,
     ) -> dict[str, Any] | ClientResponse:
         """Request Mealie and return parsed JSON unless raw_response is requested."""
 
@@ -215,7 +258,7 @@ class FamilyMealieClient:
             headers["Content-Type"] = "application/json"
 
         try:
-            async with asyncio.timeout(DEFAULT_TIMEOUT):
+            async with asyncio.timeout(timeout):
                 response = await self._session.request(
                     method,
                     url,
@@ -273,6 +316,18 @@ def compact(value: dict[str, Any]) -> dict[str, Any]:
     """Remove empty values from query params."""
 
     return {key: item for key, item in value.items() if item is not None and item != ""}
+
+
+def response_slug(value: Any) -> str:
+    """Return a slug from Mealie's string or object responses."""
+
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        slug = value.get("slug") or value.get("value") or value.get("data")
+        if slug:
+            return str(slug)
+    raise FamilyMealieApiError(f"Could not read recipe slug from Mealie response: {value}")
 
 
 def looks_like_validation_error(error: FamilyMealieApiError) -> bool:

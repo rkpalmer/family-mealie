@@ -20,6 +20,8 @@ def async_register_websocket_api(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_info)
     websocket_api.async_register_command(hass, websocket_recipes)
     websocket_api.async_register_command(hass, websocket_recipe)
+    websocket_api.async_register_command(hass, websocket_create_recipe)
+    websocket_api.async_register_command(hass, websocket_import_recipe_url)
     websocket_api.async_register_command(hass, websocket_mealplans)
     websocket_api.async_register_command(hass, websocket_create_mealplan)
     websocket_api.async_register_command(hass, websocket_update_mealplan)
@@ -73,6 +75,50 @@ async def websocket_recipe(hass: HomeAssistant, connection: websocket_api.Active
     """Return a recipe by slug."""
 
     await _send_mealie_result(connection, msg, _client_from_msg(hass, msg).recipe(msg["slug"]))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "family_mealie/recipes/create",
+        vol.Required("payload"): dict,
+    }
+)
+@websocket_api.async_response
+async def websocket_create_recipe(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Create a recipe."""
+
+    await _send_mealie_result(connection, msg, _client_from_msg(hass, msg).create_recipe(msg["payload"]))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "family_mealie/recipes/import_url",
+        vol.Required("url"): cv.string,
+        vol.Optional("include_tags", default=False): cv.boolean,
+        vol.Optional("include_categories", default=False): cv.boolean,
+    }
+)
+@websocket_api.async_response
+async def websocket_import_recipe_url(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Import a recipe from a URL."""
+
+    await _send_mealie_result(
+        connection,
+        msg,
+        _client_from_msg(hass, msg).import_recipe_url(
+            msg["url"],
+            msg["include_tags"],
+            msg["include_categories"],
+        ),
+    )
 
 
 @websocket_api.websocket_command(
