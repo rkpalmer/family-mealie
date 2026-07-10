@@ -100,6 +100,7 @@ async def websocket_create_recipe(
         vol.Required("url"): cv.string,
         vol.Optional("include_tags", default=False): cv.boolean,
         vol.Optional("include_categories", default=False): cv.boolean,
+        vol.Optional("parse_ingredients", default=True): cv.boolean,
     }
 )
 @websocket_api.async_response
@@ -117,6 +118,7 @@ async def websocket_import_recipe_url(
             msg["url"],
             msg["include_tags"],
             msg["include_categories"],
+            msg["parse_ingredients"],
         ),
     )
 

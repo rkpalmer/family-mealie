@@ -22,7 +22,7 @@ let $e = class {
     return this.cssText;
   }
 };
-const De = (t) => new $e(typeof t == "string" ? t : t + "", void 0, Q), Me = (t, ...e) => {
+const Me = (t) => new $e(typeof t == "string" ? t : t + "", void 0, Q), ke = (t, ...e) => {
   const i = t.length === 1 ? t[0] : e.reduce((a, r, s) => a + ((n) => {
     if (n._$cssResult$ === !0) return n.cssText;
     if (typeof n == "number") return n;
@@ -38,14 +38,14 @@ const De = (t) => new $e(typeof t == "string" ? t : t + "", void 0, Q), Me = (t,
 }, se = J ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((e) => {
   let i = "";
   for (const a of e.cssRules) i += a.cssText;
-  return De(i);
+  return Me(i);
 })(t) : t;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: ke, defineProperty: Ce, getOwnPropertyDescriptor: Ee, getOwnPropertyNames: Ie, getOwnPropertySymbols: Le, getPrototypeOf: Pe } = Object, q = globalThis, ne = q.trustedTypes, Oe = ne ? ne.emptyScript : "", Ue = q.reactiveElementPolyfillSupport, I = (t, e) => t, j = { toAttribute(t, e) {
+const { is: De, defineProperty: Ce, getOwnPropertyDescriptor: Ie, getOwnPropertyNames: Ee, getOwnPropertySymbols: Le, getPrototypeOf: Pe } = Object, q = globalThis, ne = q.trustedTypes, Oe = ne ? ne.emptyScript : "", Ue = q.reactiveElementPolyfillSupport, E = (t, e) => t, j = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
       t = t ? Oe : null;
@@ -73,9 +73,9 @@ const { is: ke, defineProperty: Ce, getOwnPropertyDescriptor: Ee, getOwnProperty
       }
   }
   return i;
-} }, X = (t, e) => !ke(t, e), oe = { attribute: !0, type: String, converter: j, reflect: !1, useDefault: !1, hasChanged: X };
+} }, X = (t, e) => !De(t, e), oe = { attribute: !0, type: String, converter: j, reflect: !1, useDefault: !1, hasChanged: X };
 Symbol.metadata ??= Symbol("metadata"), q.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let M = class extends HTMLElement {
+let k = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ??= []).push(e);
   }
@@ -89,7 +89,7 @@ let M = class extends HTMLElement {
     }
   }
   static getPropertyDescriptor(e, i, a) {
-    const { get: r, set: s } = Ee(this.prototype, e) ?? { get() {
+    const { get: r, set: s } = Ie(this.prototype, e) ?? { get() {
       return this[i];
     }, set(n) {
       this[i] = n;
@@ -103,14 +103,14 @@ let M = class extends HTMLElement {
     return this.elementProperties.get(e) ?? oe;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(I("elementProperties"))) return;
+    if (this.hasOwnProperty(E("elementProperties"))) return;
     const e = Pe(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(I("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(I("properties"))) {
-      const i = this.properties, a = [...Ie(i), ...Le(i)];
+    if (this.hasOwnProperty(E("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(E("properties"))) {
+      const i = this.properties, a = [...Ee(i), ...Le(i)];
       for (const r of a) this.createProperty(r, i[r]);
     }
     const e = this[Symbol.metadata];
@@ -256,15 +256,15 @@ let M = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-M.elementStyles = [], M.shadowRootOptions = { mode: "open" }, M[I("elementProperties")] = /* @__PURE__ */ new Map(), M[I("finalized")] = /* @__PURE__ */ new Map(), Ue?.({ ReactiveElement: M }), (q.reactiveElementVersions ??= []).push("2.1.2");
+k.elementStyles = [], k.shadowRootOptions = { mode: "open" }, k[E("elementProperties")] = /* @__PURE__ */ new Map(), k[E("finalized")] = /* @__PURE__ */ new Map(), Ue?.({ ReactiveElement: k }), (q.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ee = globalThis, le = (t) => t, B = ee.trustedTypes, ce = B ? B.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, be = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, xe = "?" + w, Ne = `<${xe}>`, D = document, P = () => D.createComment(""), O = (t) => t === null || typeof t != "object" && typeof t != "function", te = Array.isArray, ze = (t) => te(t) || typeof t?.[Symbol.iterator] == "function", W = `[ 	
+const ee = globalThis, le = (t) => t, B = ee.trustedTypes, ce = B ? B.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, be = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, xe = "?" + w, Ne = `<${xe}>`, M = document, P = () => M.createComment(""), O = (t) => t === null || typeof t != "object" && typeof t != "function", te = Array.isArray, ze = (t) => te(t) || typeof t?.[Symbol.iterator] == "function", W = `[ 	
 \f\r]`, C = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, pe = /-->/g, de = />/g, S = RegExp(`>|${W}(?:([^\\s"'>=/]+)(${W}*=${W}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), he = /'/g, ue = /"/g, _e = /^(?:script|style|textarea|title)$/i, He = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = He(1), T = Symbol.for("lit-noChange"), u = Symbol.for("lit-nothing"), me = /* @__PURE__ */ new WeakMap(), R = D.createTreeWalker(D, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), he = /'/g, ue = /"/g, _e = /^(?:script|style|textarea|title)$/i, He = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = He(1), T = Symbol.for("lit-noChange"), u = Symbol.for("lit-nothing"), me = /* @__PURE__ */ new WeakMap(), R = M.createTreeWalker(M, 129);
 function we(t, e) {
   if (!te(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return ce !== void 0 ? ce.createHTML(e) : e;
@@ -273,11 +273,11 @@ const Fe = (t, e) => {
   const i = t.length - 1, a = [];
   let r, s = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", n = C;
   for (let m = 0; m < i; m++) {
-    const d = t[m];
+    const h = t[m];
     let y, v, g = -1, x = 0;
-    for (; x < d.length && (n.lastIndex = x, v = n.exec(d), v !== null); ) x = n.lastIndex, n === C ? v[1] === "!--" ? n = pe : v[1] !== void 0 ? n = de : v[2] !== void 0 ? (_e.test(v[2]) && (r = RegExp("</" + v[2], "g")), n = S) : v[3] !== void 0 && (n = S) : n === S ? v[0] === ">" ? (n = r ?? C, g = -1) : v[1] === void 0 ? g = -2 : (g = n.lastIndex - v[2].length, y = v[1], n = v[3] === void 0 ? S : v[3] === '"' ? ue : he) : n === ue || n === he ? n = S : n === pe || n === de ? n = C : (n = S, r = void 0);
+    for (; x < h.length && (n.lastIndex = x, v = n.exec(h), v !== null); ) x = n.lastIndex, n === C ? v[1] === "!--" ? n = pe : v[1] !== void 0 ? n = de : v[2] !== void 0 ? (_e.test(v[2]) && (r = RegExp("</" + v[2], "g")), n = S) : v[3] !== void 0 && (n = S) : n === S ? v[0] === ">" ? (n = r ?? C, g = -1) : v[1] === void 0 ? g = -2 : (g = n.lastIndex - v[2].length, y = v[1], n = v[3] === void 0 ? S : v[3] === '"' ? ue : he) : n === ue || n === he ? n = S : n === pe || n === de ? n = C : (n = S, r = void 0);
     const _ = n === S && t[m + 1].startsWith("/>") ? " " : "";
-    s += n === C ? d + Ne : g >= 0 ? (a.push(y), d.slice(0, g) + be + d.slice(g) + w + _) : d + w + (g === -2 ? m : _);
+    s += n === C ? h + Ne : g >= 0 ? (a.push(y), h.slice(0, g) + be + h.slice(g) + w + _) : h + w + (g === -2 ? m : _);
   }
   return [we(t, s + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), a];
 };
@@ -286,43 +286,43 @@ class U {
     let r;
     this.parts = [];
     let s = 0, n = 0;
-    const m = e.length - 1, d = this.parts, [y, v] = Fe(e, i);
+    const m = e.length - 1, h = this.parts, [y, v] = Fe(e, i);
     if (this.el = U.createElement(y, a), R.currentNode = this.el.content, i === 2 || i === 3) {
       const g = this.el.content.firstChild;
       g.replaceWith(...g.childNodes);
     }
-    for (; (r = R.nextNode()) !== null && d.length < m; ) {
+    for (; (r = R.nextNode()) !== null && h.length < m; ) {
       if (r.nodeType === 1) {
         if (r.hasAttributes()) for (const g of r.getAttributeNames()) if (g.endsWith(be)) {
           const x = v[n++], _ = r.getAttribute(g).split(w), z = /([.?@])?(.*)/.exec(x);
-          d.push({ type: 1, index: s, name: z[2], strings: _, ctor: z[1] === "." ? Be : z[1] === "?" ? qe : z[1] === "@" ? Ve : V }), r.removeAttribute(g);
-        } else g.startsWith(w) && (d.push({ type: 6, index: s }), r.removeAttribute(g));
+          h.push({ type: 1, index: s, name: z[2], strings: _, ctor: z[1] === "." ? Be : z[1] === "?" ? qe : z[1] === "@" ? Ve : V }), r.removeAttribute(g);
+        } else g.startsWith(w) && (h.push({ type: 6, index: s }), r.removeAttribute(g));
         if (_e.test(r.tagName)) {
           const g = r.textContent.split(w), x = g.length - 1;
           if (x > 0) {
             r.textContent = B ? B.emptyScript : "";
-            for (let _ = 0; _ < x; _++) r.append(g[_], P()), R.nextNode(), d.push({ type: 2, index: ++s });
+            for (let _ = 0; _ < x; _++) r.append(g[_], P()), R.nextNode(), h.push({ type: 2, index: ++s });
             r.append(g[x], P());
           }
         }
-      } else if (r.nodeType === 8) if (r.data === xe) d.push({ type: 2, index: s });
+      } else if (r.nodeType === 8) if (r.data === xe) h.push({ type: 2, index: s });
       else {
         let g = -1;
-        for (; (g = r.data.indexOf(w, g + 1)) !== -1; ) d.push({ type: 7, index: s }), g += w.length - 1;
+        for (; (g = r.data.indexOf(w, g + 1)) !== -1; ) h.push({ type: 7, index: s }), g += w.length - 1;
       }
       s++;
     }
   }
   static createElement(e, i) {
-    const a = D.createElement("template");
+    const a = M.createElement("template");
     return a.innerHTML = e, a;
   }
 }
-function k(t, e, i = t, a) {
+function D(t, e, i = t, a) {
   if (e === T) return e;
   let r = a !== void 0 ? i._$Co?.[a] : i._$Cl;
   const s = O(e) ? void 0 : e._$litDirective$;
-  return r?.constructor !== s && (r?._$AO?.(!1), s === void 0 ? r = void 0 : (r = new s(t), r._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = r : i._$Cl = r), r !== void 0 && (e = k(t, r._$AS(t, e.values), r, a)), e;
+  return r?.constructor !== s && (r?._$AO?.(!1), s === void 0 ? r = void 0 : (r = new s(t), r._$AT(t, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = r : i._$Cl = r), r !== void 0 && (e = D(t, r._$AS(t, e.values), r, a)), e;
 }
 class je {
   constructor(e, i) {
@@ -335,17 +335,17 @@ class je {
     return this._$AM._$AU;
   }
   u(e) {
-    const { el: { content: i }, parts: a } = this._$AD, r = (e?.creationScope ?? D).importNode(i, !0);
+    const { el: { content: i }, parts: a } = this._$AD, r = (e?.creationScope ?? M).importNode(i, !0);
     R.currentNode = r;
-    let s = R.nextNode(), n = 0, m = 0, d = a[0];
-    for (; d !== void 0; ) {
-      if (n === d.index) {
+    let s = R.nextNode(), n = 0, m = 0, h = a[0];
+    for (; h !== void 0; ) {
+      if (n === h.index) {
         let y;
-        d.type === 2 ? y = new N(s, s.nextSibling, this, e) : d.type === 1 ? y = new d.ctor(s, d.name, d.strings, this, e) : d.type === 6 && (y = new We(s, this, e)), this._$AV.push(y), d = a[++m];
+        h.type === 2 ? y = new N(s, s.nextSibling, this, e) : h.type === 1 ? y = new h.ctor(s, h.name, h.strings, this, e) : h.type === 6 && (y = new We(s, this, e)), this._$AV.push(y), h = a[++m];
       }
-      n !== d?.index && (s = R.nextNode(), n++);
+      n !== h?.index && (s = R.nextNode(), n++);
     }
-    return R.currentNode = D, r;
+    return R.currentNode = M, r;
   }
   p(e) {
     let i = 0;
@@ -371,7 +371,7 @@ class N {
     return this._$AB;
   }
   _$AI(e, i = this) {
-    e = k(this, e, i), O(e) ? e === u || e == null || e === "" ? (this._$AH !== u && this._$AR(), this._$AH = u) : e !== this._$AH && e !== T && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : ze(e) ? this.k(e) : this._(e);
+    e = D(this, e, i), O(e) ? e === u || e == null || e === "" ? (this._$AH !== u && this._$AR(), this._$AH = u) : e !== this._$AH && e !== T && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : ze(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -380,7 +380,7 @@ class N {
     this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
   }
   _(e) {
-    this._$AH !== u && O(this._$AH) ? this._$AA.nextSibling.data = e : this.T(D.createTextNode(e)), this._$AH = e;
+    this._$AH !== u && O(this._$AH) ? this._$AA.nextSibling.data = e : this.T(M.createTextNode(e)), this._$AH = e;
   }
   $(e) {
     const { values: i, _$litType$: a } = e, r = typeof a == "number" ? this._$AC(e) : (a.el === void 0 && (a.el = U.createElement(we(a.h, a.h[0]), this.options)), a);
@@ -424,11 +424,11 @@ class V {
   _$AI(e, i = this, a, r) {
     const s = this.strings;
     let n = !1;
-    if (s === void 0) e = k(this, e, i, 0), n = !O(e) || e !== this._$AH && e !== T, n && (this._$AH = e);
+    if (s === void 0) e = D(this, e, i, 0), n = !O(e) || e !== this._$AH && e !== T, n && (this._$AH = e);
     else {
       const m = e;
-      let d, y;
-      for (e = s[0], d = 0; d < s.length - 1; d++) y = k(this, m[a + d], i, d), y === T && (y = this._$AH[d]), n ||= !O(y) || y !== this._$AH[d], y === u ? e = u : e !== u && (e += (y ?? "") + s[d + 1]), this._$AH[d] = y;
+      let h, y;
+      for (e = s[0], h = 0; h < s.length - 1; h++) y = D(this, m[a + h], i, h), y === T && (y = this._$AH[h]), n ||= !O(y) || y !== this._$AH[h], y === u ? e = u : e !== u && (e += (y ?? "") + s[h + 1]), this._$AH[h] = y;
     }
     n && !r && this.j(e);
   }
@@ -457,7 +457,7 @@ class Ve extends V {
     super(e, i, a, r, s), this.type = 5;
   }
   _$AI(e, i = this) {
-    if ((e = k(this, e, i, 0) ?? u) === T) return;
+    if ((e = D(this, e, i, 0) ?? u) === T) return;
     const a = this._$AH, r = e === u && a !== u || e.capture !== a.capture || e.once !== a.once || e.passive !== a.passive, s = e !== u && (a === u || r);
     r && this.element.removeEventListener(this.name, this, a), s && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -473,7 +473,7 @@ class We {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    k(this, e);
+    D(this, e);
   }
 }
 const Ke = ee.litHtmlPolyfillSupport;
@@ -493,7 +493,7 @@ const Ge = (t, e, i) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ie = globalThis;
-class L extends M {
+class L extends k {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -540,8 +540,8 @@ const Je = { attribute: !0, type: String, converter: j, reflect: !1, hasChanged:
   if (s === void 0 && globalThis.litPropertyMetadata.set(r, s = /* @__PURE__ */ new Map()), a === "setter" && ((t = Object.create(t)).wrapped = !0), s.set(i.name, t), a === "accessor") {
     const { name: n } = i;
     return { set(m) {
-      const d = e.get.call(this);
-      e.set.call(this, m), this.requestUpdate(n, d, t, !0, m);
+      const h = e.get.call(this);
+      e.set.call(this, m), this.requestUpdate(n, h, t, !0, m);
     }, init(m) {
       return m !== void 0 && this.C(n, void 0, t, m), m;
     } };
@@ -549,8 +549,8 @@ const Je = { attribute: !0, type: String, converter: j, reflect: !1, hasChanged:
   if (a === "setter") {
     const { name: n } = i;
     return function(m) {
-      const d = this[n];
-      e.call(this, m), this.requestUpdate(n, d, t, !0, m);
+      const h = this[n];
+      e.call(this, m), this.requestUpdate(n, h, t, !0, m);
     };
   }
   throw Error("Unsupported decorator location: " + a);
@@ -566,7 +566,7 @@ function Se(t) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function h(t) {
+function d(t) {
   return Se({ ...t, state: !0, attribute: !1 });
 }
 var Xe = Object.defineProperty, et = Object.getOwnPropertyDescriptor, p = (t, e, i, a) => {
@@ -577,11 +577,13 @@ var Xe = Object.defineProperty, et = Object.getOwnPropertyDescriptor, p = (t, e,
 const K = ["breakfast", "lunch", "dinner"], tt = ["Leftovers:", "Eat Out:", "Freezer Meal:", "Kids:"];
 let c = class extends L {
   constructor() {
-    super(...arguments), this.config = { type: "custom:family-mealie-planner-card" }, this.view = "planner", this.recipes = [], this.mealPlan = [], this.shoppingLists = [], this.loading = !1, this.addDialogOpen = !1, this.recipeDialogOpen = !1, this.recipeLoading = !1, this.search = "", this.noteText = "", this.noteEditTitle = "", this.noteEditText = "", this.noteSaving = !1, this.plannerOffsetDays = 0, this.recipeCreateMode = "url", this.recipeUrl = "", this.manualRecipeName = "", this.manualRecipeSource = "", this.manualRecipeDescription = "", this.manualRecipeServings = "", this.manualRecipePrep = "", this.manualRecipeCook = "", this.manualRecipeTotal = "", this.manualRecipeIngredients = "", this.manualRecipeInstructions = "", this.recipeSaving = !1, this.groceryText = "", this.newListName = "", this.resetPlannerRange = async () => {
+    super(...arguments), this.config = { type: "custom:family-mealie-planner-card" }, this.view = "planner", this.recipes = [], this.mealPlan = [], this.shoppingLists = [], this.loading = !1, this.addDialogOpen = !1, this.recipeDialogOpen = !1, this.recipeLoading = !1, this.search = "", this.noteText = "", this.noteEditTitle = "", this.noteEditText = "", this.noteSaving = !1, this.plannerOffsetDays = 0, this.recipeCreateOpen = !1, this.recipeCreateMode = "url", this.recipeUrl = "", this.manualRecipeName = "", this.manualRecipeSource = "", this.manualRecipeDescription = "", this.manualRecipeServings = "", this.manualRecipePrep = "", this.manualRecipeCook = "", this.manualRecipeTotal = "", this.manualRecipeIngredients = "", this.manualRecipeInstructions = "", this.manualParseIngredients = !0, this.recipeSaving = !1, this.groceryText = "", this.newListName = "", this.resetPlannerRange = async () => {
       this.plannerOffsetDays = 0, await this.reloadPlannerRange();
+    }, this.toggleRecipeCreate = () => {
+      this.recipeCreateOpen = !this.recipeCreateOpen, this.recipeCreateOpen && (this.recipeMessage = void 0);
     }, this.openDefaultAddDialog = () => {
       const t = this.daysToShow()[0] ?? ye(/* @__PURE__ */ new Date()), e = this.entryTypes()[0] ?? K[0];
-      this.openAddDialog({ date: E(t), entryType: e });
+      this.openAddDialog({ date: I(t), entryType: e });
     }, this.closeAddDialog = () => {
       this.addDialogOpen = !1;
     }, this.closeRecipeDialog = () => {
@@ -671,7 +673,7 @@ let c = class extends L {
     `;
   }
   renderDay(t) {
-    const e = E(t), i = this.hasMealsForDay(e);
+    const e = I(t), i = this.hasMealsForDay(e);
     return l`
       <article class="day">
         <div class="day-head">
@@ -685,7 +687,7 @@ let c = class extends L {
     `;
   }
   renderMealSection(t, e) {
-    const i = E(t), a = this.mealsFor(i, e);
+    const i = I(t), a = this.mealsFor(i, e);
     return a.length ? l`
       <section class="meal-section">
         <header>
@@ -720,22 +722,6 @@ let c = class extends L {
   renderRecipes() {
     const t = this.filteredRecipes();
     return l`
-      <section class="recipe-create-panel">
-        <header>
-          <h3>Add recipe</h3>
-          <div class="mode-tabs">
-            <button class=${this.recipeCreateMode === "url" ? "active" : ""} @click=${() => this.recipeCreateMode = "url"}>
-              Import URL
-            </button>
-            <button class=${this.recipeCreateMode === "manual" ? "active" : ""} @click=${() => this.recipeCreateMode = "manual"}>
-              Manual
-            </button>
-          </div>
-        </header>
-        ${this.recipeMessage ? l`<div class="success">${this.recipeMessage}</div>` : u}
-        ${this.recipeCreateMode === "url" ? this.renderRecipeUrlCreate() : this.renderRecipeManualCreate()}
-      </section>
-
       <div class="recipe-toolbar">
         <label>
           Search recipes
@@ -746,7 +732,28 @@ let c = class extends L {
             @input=${(e) => this.search = f(e)}
           />
         </label>
+        <button class="secondary" @click=${this.toggleRecipeCreate}>
+          ${this.recipeCreateOpen ? "Hide add recipe" : "Add recipe"}
+        </button>
       </div>
+
+      ${this.recipeCreateOpen ? l`
+            <section class="recipe-create-panel">
+              <header>
+                <h3>Add recipe</h3>
+                <div class="mode-tabs">
+                  <button class=${this.recipeCreateMode === "url" ? "active" : ""} @click=${() => this.recipeCreateMode = "url"}>
+                    Import URL
+                  </button>
+                  <button class=${this.recipeCreateMode === "manual" ? "active" : ""} @click=${() => this.recipeCreateMode = "manual"}>
+                    Manual
+                  </button>
+                </div>
+              </header>
+              ${this.recipeMessage ? l`<div class="success">${this.recipeMessage}</div>` : u}
+              ${this.recipeCreateMode === "url" ? this.renderRecipeUrlCreate() : this.renderRecipeManualCreate()}
+            </section>
+          ` : this.recipeMessage ? l`<div class="success compact">${this.recipeMessage}</div>` : u}
 
       <div class="recipe-grid">
         ${t.map(
@@ -860,6 +867,14 @@ let c = class extends L {
             .value=${this.manualRecipeInstructions}
             @input=${(t) => this.manualRecipeInstructions = f(t)}
           ></textarea>
+        </label>
+        <label class="check-row span-2">
+          <input
+            type="checkbox"
+            .checked=${this.manualParseIngredients}
+            @change=${(t) => this.manualParseIngredients = t.currentTarget.checked}
+          />
+          <span>Use Mealie ingredient parser</span>
         </label>
         <footer class="span-2">
           <button class="primary" @click=${this.createManualRecipe} ?disabled=${this.recipeSaving || !this.manualRecipeName.trim()}>
@@ -1152,7 +1167,8 @@ let c = class extends L {
         await this.callFamilyMealie("family_mealie/recipes/import_url", {
           url: e,
           include_tags: !0,
-          include_categories: !0
+          include_categories: !0,
+          parse_ingredients: !0
         }), this.recipeUrl = "", this.recipeMessage = "Recipe imported.", await this.loadRecipes();
       } catch (i) {
         this.error = b(i, "Could not import recipe.");
@@ -1172,7 +1188,8 @@ let c = class extends L {
       cook: this.manualRecipeCook,
       total: this.manualRecipeTotal,
       ingredients: this.manualRecipeIngredients,
-      instructions: this.manualRecipeInstructions
+      instructions: this.manualRecipeInstructions,
+      parseIngredients: this.manualParseIngredients
     });
     if (e.name) {
       this.recipeSaving = !0, this.recipeMessage = void 0, this.error = void 0;
@@ -1308,7 +1325,7 @@ let c = class extends L {
     }
   }
   clearManualRecipeForm() {
-    this.manualRecipeName = "", this.manualRecipeSource = "", this.manualRecipeDescription = "", this.manualRecipeServings = "", this.manualRecipePrep = "", this.manualRecipeCook = "", this.manualRecipeTotal = "", this.manualRecipeIngredients = "", this.manualRecipeInstructions = "";
+    this.manualRecipeName = "", this.manualRecipeSource = "", this.manualRecipeDescription = "", this.manualRecipeServings = "", this.manualRecipePrep = "", this.manualRecipeCook = "", this.manualRecipeTotal = "", this.manualRecipeIngredients = "", this.manualRecipeInstructions = "", this.manualParseIngredients = !0;
   }
   openAddDialog(t) {
     this.selectedSlot = t, this.selectedRecipe = void 0, this.search = "", this.noteText = "", this.addDialogOpen = !0;
@@ -1375,7 +1392,7 @@ let c = class extends L {
   }
   dateRange() {
     const t = this.daysToShow();
-    return [E(t[0]), E(t[t.length - 1])];
+    return [I(t[0]), I(t[t.length - 1])];
   }
   subtitle() {
     if (this.view === "recipes") return `${this.recipes.length} recipes`;
@@ -1402,7 +1419,7 @@ let c = class extends L {
     this.addDialogOpen && t && !t.open && t.showModal(), this.recipeDialogOpen && e && !e.open && e.showModal();
   }
 };
-c.styles = Me`
+c.styles = ke`
     :host {
       display: block;
       color: var(--primary-text-color);
@@ -1689,6 +1706,13 @@ c.styles = Me`
       margin-top: 18px;
     }
 
+    .recipe-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
     .recipe-create-panel {
       display: grid;
       gap: 14px;
@@ -1758,6 +1782,24 @@ c.styles = Me`
       color: var(--meal-card-accent);
       background: color-mix(in srgb, var(--meal-card-accent) 8%, var(--meal-card-surface));
       font-weight: 750;
+    }
+
+    .success.compact {
+      margin-top: 12px;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+    }
+
+    .check-row input {
+      width: 24px;
+      height: 24px;
+      min-height: auto;
+      padding: 0;
     }
 
     .recipe-grid {
@@ -2116,6 +2158,7 @@ c.styles = Me`
 
       .field-row,
       .manual-recipe-form,
+      .recipe-toolbar,
       .recipe-url-row,
       .stats,
       .grocery-layout {
@@ -2131,121 +2174,127 @@ p([
   Se({ attribute: !1 })
 ], c.prototype, "hass", 2);
 p([
-  h()
+  d()
 ], c.prototype, "config", 2);
 p([
-  h()
+  d()
 ], c.prototype, "view", 2);
 p([
-  h()
+  d()
 ], c.prototype, "recipes", 2);
 p([
-  h()
+  d()
 ], c.prototype, "mealPlan", 2);
 p([
-  h()
+  d()
 ], c.prototype, "shoppingLists", 2);
 p([
-  h()
+  d()
 ], c.prototype, "selectedShoppingList", 2);
 p([
-  h()
+  d()
 ], c.prototype, "selectedShoppingListId", 2);
 p([
-  h()
+  d()
 ], c.prototype, "imageToken", 2);
 p([
-  h()
+  d()
 ], c.prototype, "loading", 2);
 p([
-  h()
+  d()
 ], c.prototype, "error", 2);
 p([
-  h()
+  d()
 ], c.prototype, "addDialogOpen", 2);
 p([
-  h()
+  d()
 ], c.prototype, "recipeDialogOpen", 2);
 p([
-  h()
+  d()
 ], c.prototype, "selectedSlot", 2);
 p([
-  h()
+  d()
 ], c.prototype, "selectedMeal", 2);
 p([
-  h()
+  d()
 ], c.prototype, "selectedRecipeForDialog", 2);
 p([
-  h()
+  d()
 ], c.prototype, "recipeDetail", 2);
 p([
-  h()
+  d()
 ], c.prototype, "recipeLoading", 2);
 p([
-  h()
+  d()
 ], c.prototype, "search", 2);
 p([
-  h()
+  d()
 ], c.prototype, "noteText", 2);
 p([
-  h()
+  d()
 ], c.prototype, "noteEditTitle", 2);
 p([
-  h()
+  d()
 ], c.prototype, "noteEditText", 2);
 p([
-  h()
+  d()
 ], c.prototype, "noteSaving", 2);
 p([
-  h()
+  d()
 ], c.prototype, "selectedRecipe", 2);
 p([
-  h()
+  d()
 ], c.prototype, "plannerOffsetDays", 2);
 p([
-  h()
+  d()
+], c.prototype, "recipeCreateOpen", 2);
+p([
+  d()
 ], c.prototype, "recipeCreateMode", 2);
 p([
-  h()
+  d()
 ], c.prototype, "recipeUrl", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipeName", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipeSource", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipeDescription", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipeServings", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipePrep", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipeCook", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipeTotal", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipeIngredients", 2);
 p([
-  h()
+  d()
 ], c.prototype, "manualRecipeInstructions", 2);
 p([
-  h()
+  d()
+], c.prototype, "manualParseIngredients", 2);
+p([
+  d()
 ], c.prototype, "recipeSaving", 2);
 p([
-  h()
+  d()
 ], c.prototype, "recipeMessage", 2);
 p([
-  h()
+  d()
 ], c.prototype, "groceryText", 2);
 p([
-  h()
+  d()
 ], c.prototype, "newListName", 2);
 c = p([
   Ze("family-mealie-planner-card")
@@ -2284,7 +2333,7 @@ function at(t, e) {
 function rt(t, e) {
   const i = $(t);
   if (!i) return;
-  const a = $(i.recipe), r = o(i.date) ?? o(i.mealplan_date) ?? o(i.mealplanDate), s = o(i.entryType) ?? o(i.entry_type) ?? o(i.mealType) ?? o(i.meal_type), n = o(i.text) ?? o(i.note), m = o(i.title) || o(a?.name) || n || "Meal", d = o(i.recipeSlug) ?? o(i.recipe_slug) ?? o(a?.slug);
+  const a = $(i.recipe), r = o(i.date) ?? o(i.mealplan_date) ?? o(i.mealplanDate), s = o(i.entryType) ?? o(i.entry_type) ?? o(i.mealType) ?? o(i.meal_type), n = o(i.text) ?? o(i.note), m = o(i.title) || o(a?.name) || n || "Meal", h = o(i.recipeSlug) ?? o(i.recipe_slug) ?? o(a?.slug);
   if (!(!r || !s))
     return {
       id: i.id,
@@ -2293,7 +2342,7 @@ function rt(t, e) {
       title: m,
       text: n,
       recipeId: o(i.recipeId) ?? o(i.recipe_id) ?? o(a?.id),
-      recipeSlug: d,
+      recipeSlug: h,
       image: Ae(o(i.recipeId) ?? o(i.recipe_id) ?? o(a?.id), a, e),
       raw: i
     };
@@ -2391,7 +2440,8 @@ function pt(t) {
         summary: "",
         text: r,
         ingredientReferences: []
-      })) : void 0
+      })) : void 0,
+      parseIngredients: t.parseIngredients
     })
   };
 }
@@ -2468,7 +2518,7 @@ function ve(t, e) {
   const i = new Date(t);
   return i.setDate(i.getDate() + e), i;
 }
-function E(t) {
+function I(t) {
   const e = t.getFullYear(), i = String(t.getMonth() + 1).padStart(2, "0"), a = String(t.getDate()).padStart(2, "0");
   return `${e}-${i}-${a}`;
 }

@@ -82,6 +82,7 @@ interface ManualRecipeForm {
   total: string;
   ingredients: string;
   instructions: string;
+  parseIngredients: boolean;
 }
 
 type MainView = "planner" | "recipes" | "groceries";
@@ -118,6 +119,7 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private noteSaving = false;
   @state() private selectedRecipe?: RecipeSummary;
   @state() private plannerOffsetDays = 0;
+  @state() private recipeCreateOpen = false;
   @state() private recipeCreateMode: RecipeCreateMode = "url";
   @state() private recipeUrl = "";
   @state() private manualRecipeName = "";
@@ -129,6 +131,7 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private manualRecipeTotal = "";
   @state() private manualRecipeIngredients = "";
   @state() private manualRecipeInstructions = "";
+  @state() private manualParseIngredients = true;
   @state() private recipeSaving = false;
   @state() private recipeMessage?: string;
   @state() private groceryText = "";
@@ -301,22 +304,6 @@ export class FamilyMealiePlannerCard extends LitElement {
     const recipes = this.filteredRecipes();
 
     return html`
-      <section class="recipe-create-panel">
-        <header>
-          <h3>Add recipe</h3>
-          <div class="mode-tabs">
-            <button class=${this.recipeCreateMode === "url" ? "active" : ""} @click=${() => (this.recipeCreateMode = "url")}>
-              Import URL
-            </button>
-            <button class=${this.recipeCreateMode === "manual" ? "active" : ""} @click=${() => (this.recipeCreateMode = "manual")}>
-              Manual
-            </button>
-          </div>
-        </header>
-        ${this.recipeMessage ? html`<div class="success">${this.recipeMessage}</div>` : nothing}
-        ${this.recipeCreateMode === "url" ? this.renderRecipeUrlCreate() : this.renderRecipeManualCreate()}
-      </section>
-
       <div class="recipe-toolbar">
         <label>
           Search recipes
@@ -327,7 +314,32 @@ export class FamilyMealiePlannerCard extends LitElement {
             @input=${(event: InputEvent) => (this.search = inputValue(event))}
           />
         </label>
+        <button class="secondary" @click=${this.toggleRecipeCreate}>
+          ${this.recipeCreateOpen ? "Hide add recipe" : "Add recipe"}
+        </button>
       </div>
+
+      ${this.recipeCreateOpen
+        ? html`
+            <section class="recipe-create-panel">
+              <header>
+                <h3>Add recipe</h3>
+                <div class="mode-tabs">
+                  <button class=${this.recipeCreateMode === "url" ? "active" : ""} @click=${() => (this.recipeCreateMode = "url")}>
+                    Import URL
+                  </button>
+                  <button class=${this.recipeCreateMode === "manual" ? "active" : ""} @click=${() => (this.recipeCreateMode = "manual")}>
+                    Manual
+                  </button>
+                </div>
+              </header>
+              ${this.recipeMessage ? html`<div class="success">${this.recipeMessage}</div>` : nothing}
+              ${this.recipeCreateMode === "url" ? this.renderRecipeUrlCreate() : this.renderRecipeManualCreate()}
+            </section>
+          `
+        : this.recipeMessage
+          ? html`<div class="success compact">${this.recipeMessage}</div>`
+          : nothing}
 
       <div class="recipe-grid">
         ${recipes.map(
@@ -443,6 +455,14 @@ export class FamilyMealiePlannerCard extends LitElement {
             .value=${this.manualRecipeInstructions}
             @input=${(event: InputEvent) => (this.manualRecipeInstructions = inputValue(event))}
           ></textarea>
+        </label>
+        <label class="check-row span-2">
+          <input
+            type="checkbox"
+            .checked=${this.manualParseIngredients}
+            @change=${(event: Event) => (this.manualParseIngredients = (event.currentTarget as HTMLInputElement).checked)}
+          />
+          <span>Use Mealie ingredient parser</span>
         </label>
         <footer class="span-2">
           <button class="primary" @click=${this.createManualRecipe} ?disabled=${this.recipeSaving || !this.manualRecipeName.trim()}>
@@ -797,6 +817,7 @@ export class FamilyMealiePlannerCard extends LitElement {
         url,
         include_tags: true,
         include_categories: true,
+        parse_ingredients: true,
       });
       this.recipeUrl = "";
       this.recipeMessage = "Recipe imported.";
@@ -820,6 +841,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       total: this.manualRecipeTotal,
       ingredients: this.manualRecipeIngredients,
       instructions: this.manualRecipeInstructions,
+      parseIngredients: this.manualParseIngredients,
     });
     if (!payload.name) return;
 
@@ -1029,7 +1051,13 @@ export class FamilyMealiePlannerCard extends LitElement {
     this.manualRecipeTotal = "";
     this.manualRecipeIngredients = "";
     this.manualRecipeInstructions = "";
+    this.manualParseIngredients = true;
   }
+
+  private toggleRecipeCreate = (): void => {
+    this.recipeCreateOpen = !this.recipeCreateOpen;
+    if (this.recipeCreateOpen) this.recipeMessage = undefined;
+  };
 
   private openAddDialog(slot: SlotContext): void {
     this.selectedSlot = slot;
@@ -1481,6 +1509,13 @@ export class FamilyMealiePlannerCard extends LitElement {
       margin-top: 18px;
     }
 
+    .recipe-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+
     .recipe-create-panel {
       display: grid;
       gap: 14px;
@@ -1550,6 +1585,24 @@ export class FamilyMealiePlannerCard extends LitElement {
       color: var(--meal-card-accent);
       background: color-mix(in srgb, var(--meal-card-accent) 8%, var(--meal-card-surface));
       font-weight: 750;
+    }
+
+    .success.compact {
+      margin-top: 12px;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+    }
+
+    .check-row input {
+      width: 24px;
+      height: 24px;
+      min-height: auto;
+      padding: 0;
     }
 
     .recipe-grid {
@@ -1908,6 +1961,7 @@ export class FamilyMealiePlannerCard extends LitElement {
 
       .field-row,
       .manual-recipe-form,
+      .recipe-toolbar,
       .recipe-url-row,
       .stats,
       .grocery-layout {
@@ -2099,6 +2153,7 @@ function manualRecipePayload(form: ManualRecipeForm): Record<string, unknown> & 
             ingredientReferences: [],
           }))
         : undefined,
+      parseIngredients: form.parseIngredients,
     }),
   };
 }

@@ -71,6 +71,10 @@ class FamilyMealieClient:
         if not name:
             raise FamilyMealieApiError("Recipe name is required.")
 
+        ingredients = payload.get("recipeIngredient") or payload.get("recipe_ingredient")
+        if payload.get("parseIngredients", True) and isinstance(ingredients, list):
+            payload = payload | {"recipeIngredient": await self.parse_ingredient_lines(ingredients)}
+
         slug_result = await self.post("/api/recipes", json={"name": name})
         slug = response_slug(slug_result)
         recipe = await self.recipe(slug)
@@ -95,6 +99,7 @@ class FamilyMealieClient:
         url: str,
         include_tags: bool = False,
         include_categories: bool = False,
+        parse_ingredients: bool = True,
     ) -> dict[str, Any]:
         """Import a recipe from a URL using Mealie's server-side scraper."""
 
@@ -104,7 +109,44 @@ class FamilyMealieClient:
             "includeCategories": include_categories,
         }
         result = await self.post_with_alias_fallback("/api/recipes/create/url", payload, timeout=90)
-        return {"slug": response_slug(result)}
+        slug = response_slug(result)
+        if parse_ingredients:
+            await self.parse_recipe_ingredients(slug)
+        return {"slug": slug}
+
+    async def parse_ingredient_lines(self, ingredients: list[Any]) -> list[Any]:
+        """Parse pasted ingredient lines with Mealie's ingredient parser."""
+
+        lines = [ingredient_line(item) for item in ingredients]
+        lines = [line for line in lines if line]
+        if not lines:
+            return []
+
+        try:
+            parsed = await self.post("/api/parser/ingredients", json={"parser": "nlp", "ingredients": lines})
+            if isinstance(parsed, list):
+                return [item.get("ingredient", item) if isinstance(item, dict) else item for item in parsed]
+        except FamilyMealieApiError:
+            pass
+
+        return [{"note": line, "display": line, "originalText": line} for line in lines]
+
+    async def parse_recipe_ingredients(self, slug: str) -> dict[str, Any]:
+        """Parse ingredients on an existing recipe and save the updated recipe."""
+
+        recipe = await self.recipe(slug)
+        ingredients = recipe.get("recipeIngredient") or recipe.get("recipe_ingredient")
+        if not isinstance(ingredients, list) or not ingredients:
+            return recipe
+
+        parsed = await self.parse_ingredient_lines(ingredients)
+        if not parsed:
+            return recipe
+
+        return await self.put_with_alias_fallback(
+            f"/api/recipes/{quote(slug, safe='')}",
+            recipe | {"recipeIngredient": parsed},
+        )
 
     async def recipe_image(self, recipe_id: str) -> MealieImage:
         """Return a recipe image by recipe id."""
@@ -328,6 +370,16 @@ def response_slug(value: Any) -> str:
         if slug:
             return str(slug)
     raise FamilyMealieApiError(f"Could not read recipe slug from Mealie response: {value}")
+
+
+def ingredient_line(value: Any) -> str:
+    """Return the original display line for a quick-entry ingredient."""
+
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, dict):
+        return str(value.get("originalText") or value.get("original_text") or value.get("display") or value.get("note") or "").strip()
+    return ""
 
 
 def looks_like_validation_error(error: FamilyMealieApiError) -> bool:
