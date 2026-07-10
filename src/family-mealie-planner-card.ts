@@ -16,6 +16,7 @@ interface CardConfig {
   result_limit?: number;
   refresh_minutes?: number;
   entry_id?: string;
+  ingredient_parser?: IngredientParser;
 }
 
 interface RecipeSummary {
@@ -87,6 +88,7 @@ interface ManualRecipeForm {
 
 type MainView = "planner" | "recipes" | "groceries";
 type RecipeCreateMode = "url" | "manual";
+type IngredientParser = "auto" | "openai" | "nlp" | "brute";
 
 const DEFAULT_ENTRY_TYPES = ["breakfast", "lunch", "dinner"];
 const QUICK_NOTES = ["Leftovers:", "Eat Out:", "Freezer Meal:", "Kids:"];
@@ -818,6 +820,7 @@ export class FamilyMealiePlannerCard extends LitElement {
         include_tags: true,
         include_categories: true,
         parse_ingredients: true,
+        ingredient_parser: this.config.ingredient_parser ?? "auto",
       });
       this.recipeUrl = "";
       this.recipeMessage = "Recipe imported.";
@@ -842,6 +845,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       ingredients: this.manualRecipeIngredients,
       instructions: this.manualRecipeInstructions,
       parseIngredients: this.manualParseIngredients,
+      ingredientParser: this.config.ingredient_parser ?? "auto",
     });
     if (!payload.name) return;
 

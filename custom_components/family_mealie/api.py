@@ -72,8 +72,9 @@ class FamilyMealieClient:
             raise FamilyMealieApiError("Recipe name is required.")
 
         ingredients = payload.get("recipeIngredient") or payload.get("recipe_ingredient")
+        parser = str(payload.get("ingredientParser") or payload.get("ingredient_parser") or "auto")
         if payload.get("parseIngredients", True) and isinstance(ingredients, list):
-            payload = payload | {"recipeIngredient": await self.parse_ingredient_lines(ingredients)}
+            payload = payload | {"recipeIngredient": await self.parse_ingredient_lines(ingredients, parser)}
 
         slug_result = await self.post("/api/recipes", json={"name": name})
         slug = response_slug(slug_result)
@@ -117,6 +118,7 @@ class FamilyMealieClient:
         include_tags: bool = False,
         include_categories: bool = False,
         parse_ingredients: bool = True,
+        ingredient_parser: str = "auto",
     ) -> dict[str, Any]:
         """Import a recipe from a URL using Mealie's server-side scraper."""
 
@@ -128,10 +130,10 @@ class FamilyMealieClient:
         result = await self.post_with_alias_fallback("/api/recipes/create/url", payload, timeout=90)
         slug = response_slug(result)
         if parse_ingredients:
-            await self.parse_recipe_ingredients(slug)
+            await self.parse_recipe_ingredients(slug, ingredient_parser)
         return {"slug": slug}
 
-    async def parse_ingredient_lines(self, ingredients: list[Any]) -> list[Any]:
+    async def parse_ingredient_lines(self, ingredients: list[Any], parser: str = "auto") -> list[Any]:
         """Parse pasted ingredient lines with Mealie's ingredient parser."""
 
         lines = [ingredient_line(item) for item in ingredients]
@@ -139,16 +141,20 @@ class FamilyMealieClient:
         if not lines:
             return []
 
-        try:
-            parsed = await self.post("/api/parser/ingredients", json={"parser": "nlp", "ingredients": lines})
-            if isinstance(parsed, list):
-                return [safe_parsed_ingredient(item, line) for item, line in zip(parsed, lines, strict=False)]
-        except FamilyMealieApiError:
-            pass
+        for parser_name in parser_order(parser):
+            try:
+                parsed = await self.post(
+                    "/api/parser/ingredients",
+                    json={"parser": parser_name, "ingredients": lines},
+                )
+                if isinstance(parsed, list):
+                    return [safe_parsed_ingredient(item, line) for item, line in zip(parsed, lines, strict=False)]
+            except FamilyMealieApiError:
+                pass
 
         return [{"note": line, "display": line, "originalText": line} for line in lines]
 
-    async def parse_recipe_ingredients(self, slug: str) -> dict[str, Any]:
+    async def parse_recipe_ingredients(self, slug: str, parser: str = "auto") -> dict[str, Any]:
         """Parse ingredients on an existing recipe and save the updated recipe."""
 
         recipe = await self.recipe(slug)
@@ -156,7 +162,7 @@ class FamilyMealieClient:
         if not isinstance(ingredients, list) or not ingredients:
             return recipe
 
-        parsed = await self.parse_ingredient_lines(ingredients)
+        parsed = await self.parse_ingredient_lines(ingredients, parser)
         if not parsed:
             return recipe
 
@@ -406,6 +412,17 @@ def plain_ingredient_lines(ingredients: list[Any]) -> list[dict[str, str]]:
     """Return plain display ingredient objects from mixed ingredient values."""
 
     return [{"note": line, "display": line, "originalText": line} for line in (ingredient_line(item) for item in ingredients) if line]
+
+
+def parser_order(parser: str) -> list[str]:
+    """Return Mealie parser names in the order they should be tried."""
+
+    parser_name = parser.strip().lower().replace("-", "_")
+    if parser_name == "auto":
+        return ["openai", "nlp", "brute"]
+    if parser_name in {"openai", "nlp", "brute"}:
+        return [parser_name]
+    return ["openai", "nlp", "brute"]
 
 
 def safe_parsed_ingredient(value: Any, fallback_line: str) -> dict[str, Any]:

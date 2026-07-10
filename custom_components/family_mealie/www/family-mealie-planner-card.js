@@ -45,7 +45,7 @@ const Me = (t) => new $e(typeof t == "string" ? t : t + "", void 0, Q), ke = (t,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: De, defineProperty: Ce, getOwnPropertyDescriptor: Ie, getOwnPropertyNames: Ee, getOwnPropertySymbols: Le, getPrototypeOf: Pe } = Object, q = globalThis, ne = q.trustedTypes, Oe = ne ? ne.emptyScript : "", Ue = q.reactiveElementPolyfillSupport, E = (t, e) => t, j = { toAttribute(t, e) {
+const { is: De, defineProperty: Ce, getOwnPropertyDescriptor: Ie, getOwnPropertyNames: Ee, getOwnPropertySymbols: Pe, getPrototypeOf: Le } = Object, q = globalThis, ne = q.trustedTypes, Oe = ne ? ne.emptyScript : "", Ue = q.reactiveElementPolyfillSupport, E = (t, e) => t, j = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
       t = t ? Oe : null;
@@ -104,13 +104,13 @@ let k = class extends HTMLElement {
   }
   static _$Ei() {
     if (this.hasOwnProperty(E("elementProperties"))) return;
-    const e = Pe(this);
+    const e = Le(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(E("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(E("properties"))) {
-      const i = this.properties, a = [...Ee(i), ...Le(i)];
+      const i = this.properties, a = [...Ee(i), ...Pe(i)];
       for (const r of a) this.createProperty(r, i[r]);
     }
     const e = this[Symbol.metadata];
@@ -262,7 +262,7 @@ k.elementStyles = [], k.shadowRootOptions = { mode: "open" }, k[E("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ee = globalThis, le = (t) => t, B = ee.trustedTypes, ce = B ? B.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, be = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, xe = "?" + w, Ne = `<${xe}>`, M = document, P = () => M.createComment(""), O = (t) => t === null || typeof t != "object" && typeof t != "function", te = Array.isArray, ze = (t) => te(t) || typeof t?.[Symbol.iterator] == "function", W = `[ 	
+const ee = globalThis, le = (t) => t, B = ee.trustedTypes, ce = B ? B.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, be = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, xe = "?" + w, Ne = `<${xe}>`, M = document, L = () => M.createComment(""), O = (t) => t === null || typeof t != "object" && typeof t != "function", te = Array.isArray, ze = (t) => te(t) || typeof t?.[Symbol.iterator] == "function", W = `[ 	
 \f\r]`, C = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, pe = /-->/g, de = />/g, S = RegExp(`>|${W}(?:([^\\s"'>=/]+)(${W}*=${W}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), he = /'/g, ue = /"/g, _e = /^(?:script|style|textarea|title)$/i, He = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = He(1), T = Symbol.for("lit-noChange"), u = Symbol.for("lit-nothing"), me = /* @__PURE__ */ new WeakMap(), R = M.createTreeWalker(M, 129);
 function we(t, e) {
@@ -301,8 +301,8 @@ class U {
           const g = r.textContent.split(w), x = g.length - 1;
           if (x > 0) {
             r.textContent = B ? B.emptyScript : "";
-            for (let _ = 0; _ < x; _++) r.append(g[_], P()), R.nextNode(), h.push({ type: 2, index: ++s });
-            r.append(g[x], P());
+            for (let _ = 0; _ < x; _++) r.append(g[_], L()), R.nextNode(), h.push({ type: 2, index: ++s });
+            r.append(g[x], L());
           }
         }
       } else if (r.nodeType === 8) if (r.data === xe) h.push({ type: 2, index: s });
@@ -398,7 +398,7 @@ class N {
     te(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let a, r = 0;
-    for (const s of e) r === i.length ? i.push(a = new N(this.O(P()), this.O(P()), this, this.options)) : a = i[r], a._$AI(s), r++;
+    for (const s of e) r === i.length ? i.push(a = new N(this.O(L()), this.O(L()), this, this.options)) : a = i[r], a._$AI(s), r++;
     r < i.length && (this._$AR(a && a._$AB.nextSibling, r), i.length = r);
   }
   _$AR(e = this._$AA.nextSibling, i) {
@@ -483,7 +483,7 @@ const Ge = (t, e, i) => {
   let r = a._$litPart$;
   if (r === void 0) {
     const s = i?.renderBefore ?? null;
-    a._$litPart$ = r = new N(e.insertBefore(P(), s), s, void 0, i ?? {});
+    a._$litPart$ = r = new N(e.insertBefore(L(), s), s, void 0, i ?? {});
   }
   return r._$AI(t), r;
 };
@@ -493,7 +493,7 @@ const Ge = (t, e, i) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ie = globalThis;
-class L extends k {
+class P extends k {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -515,9 +515,9 @@ class L extends k {
     return T;
   }
 }
-L._$litElement$ = !0, L.finalized = !0, ie.litElementHydrateSupport?.({ LitElement: L });
+P._$litElement$ = !0, P.finalized = !0, ie.litElementHydrateSupport?.({ LitElement: P });
 const Ye = ie.litElementPolyfillSupport;
-Ye?.({ LitElement: L });
+Ye?.({ LitElement: P });
 (ie.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
@@ -575,7 +575,7 @@ var Xe = Object.defineProperty, et = Object.getOwnPropertyDescriptor, p = (t, e,
   return a && r && Xe(e, i, r), r;
 };
 const K = ["breakfast", "lunch", "dinner"], tt = ["Leftovers:", "Eat Out:", "Freezer Meal:", "Kids:"];
-let c = class extends L {
+let c = class extends P {
   constructor() {
     super(...arguments), this.config = { type: "custom:family-mealie-planner-card" }, this.view = "planner", this.recipes = [], this.mealPlan = [], this.shoppingLists = [], this.loading = !1, this.addDialogOpen = !1, this.recipeDialogOpen = !1, this.recipeLoading = !1, this.search = "", this.noteText = "", this.noteEditTitle = "", this.noteEditText = "", this.noteSaving = !1, this.plannerOffsetDays = 0, this.recipeCreateOpen = !1, this.recipeCreateMode = "url", this.recipeUrl = "", this.manualRecipeName = "", this.manualRecipeSource = "", this.manualRecipeDescription = "", this.manualRecipeServings = "", this.manualRecipePrep = "", this.manualRecipeCook = "", this.manualRecipeTotal = "", this.manualRecipeIngredients = "", this.manualRecipeInstructions = "", this.manualParseIngredients = !0, this.recipeSaving = !1, this.groceryText = "", this.newListName = "", this.resetPlannerRange = async () => {
       this.plannerOffsetDays = 0, await this.reloadPlannerRange();
@@ -1168,7 +1168,8 @@ let c = class extends L {
           url: e,
           include_tags: !0,
           include_categories: !0,
-          parse_ingredients: !0
+          parse_ingredients: !0,
+          ingredient_parser: this.config.ingredient_parser ?? "auto"
         }), this.recipeUrl = "", this.recipeMessage = "Recipe imported.", await this.loadRecipes();
       } catch (i) {
         this.error = b(i, "Could not import recipe.");
@@ -1189,7 +1190,8 @@ let c = class extends L {
       total: this.manualRecipeTotal,
       ingredients: this.manualRecipeIngredients,
       instructions: this.manualRecipeInstructions,
-      parseIngredients: this.manualParseIngredients
+      parseIngredients: this.manualParseIngredients,
+      ingredientParser: this.config.ingredient_parser ?? "auto"
     });
     if (e.name) {
       this.recipeSaving = !0, this.recipeMessage = void 0, this.error = void 0;
