@@ -8,6 +8,7 @@ CONF_AUTH_HEADER = "auth_header"
 CONF_URL = "url"
 
 DATA_CLIENTS = "clients"
+DATA_IMAGE_TOKEN = "image_token"
 DATA_YAML_CLIENT = "yaml_client"
 
 DEFAULT_NAME = "Family Mealie"

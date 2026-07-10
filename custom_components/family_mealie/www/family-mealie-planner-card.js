@@ -45,7 +45,7 @@ const _e = (t) => new ge(typeof t == "string" ? t : t + "", void 0, Z), we = (t,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Ae, defineProperty: De, getOwnPropertyDescriptor: ke, getOwnPropertyNames: Ee, getOwnPropertySymbols: Le, getPrototypeOf: Te } = Object, B = globalThis, se = B.trustedTypes, Me = se ? se.emptyScript : "", Ce = B.reactiveElementPolyfillSupport, R = (t, e) => t, j = { toAttribute(t, e) {
+const { is: Ae, defineProperty: De, getOwnPropertyDescriptor: ke, getOwnPropertyNames: Te, getOwnPropertySymbols: Le, getPrototypeOf: Ee } = Object, B = globalThis, se = B.trustedTypes, Me = se ? se.emptyScript : "", Ce = B.reactiveElementPolyfillSupport, R = (t, e) => t, j = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
       t = t ? Me : null;
@@ -75,7 +75,7 @@ const { is: Ae, defineProperty: De, getOwnPropertyDescriptor: ke, getOwnProperty
   return i;
 } }, J = (t, e) => !Ae(t, e), re = { attribute: !0, type: String, converter: j, reflect: !1, useDefault: !1, hasChanged: J };
 Symbol.metadata ??= Symbol("metadata"), B.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let E = class extends HTMLElement {
+let T = class extends HTMLElement {
   static addInitializer(e) {
     this._$Ei(), (this.l ??= []).push(e);
   }
@@ -104,13 +104,13 @@ let E = class extends HTMLElement {
   }
   static _$Ei() {
     if (this.hasOwnProperty(R("elementProperties"))) return;
-    const e = Te(this);
+    const e = Ee(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(R("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(R("properties"))) {
-      const i = this.properties, s = [...Ee(i), ...Le(i)];
+      const i = this.properties, s = [...Te(i), ...Le(i)];
       for (const r of s) this.createProperty(r, i[r]);
     }
     const e = this[Symbol.metadata];
@@ -256,15 +256,15 @@ let E = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-E.elementStyles = [], E.shadowRootOptions = { mode: "open" }, E[R("elementProperties")] = /* @__PURE__ */ new Map(), E[R("finalized")] = /* @__PURE__ */ new Map(), Ce?.({ ReactiveElement: E }), (B.reactiveElementVersions ??= []).push("2.1.2");
+T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[R("elementProperties")] = /* @__PURE__ */ new Map(), T[R("finalized")] = /* @__PURE__ */ new Map(), Ce?.({ ReactiveElement: T }), (B.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Q = globalThis, ae = (t) => t, F = Q.trustedTypes, oe = F ? F.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, me = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, fe = "?" + w, Re = `<${fe}>`, k = document, I = () => k.createComment(""), O = (t) => t === null || typeof t != "object" && typeof t != "function", X = Array.isArray, Pe = (t) => X(t) || typeof t?.[Symbol.iterator] == "function", V = `[ 	
+const Q = globalThis, ae = (t) => t, F = Q.trustedTypes, oe = F ? F.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, me = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, fe = "?" + w, Re = `<${fe}>`, k = document, P = () => k.createComment(""), O = (t) => t === null || typeof t != "object" && typeof t != "function", X = Array.isArray, Ie = (t) => X(t) || typeof t?.[Symbol.iterator] == "function", V = `[ 	
 \f\r]`, M = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ne = /-->/g, le = />/g, S = RegExp(`>|${V}(?:([^\\s"'>=/]+)(${V}*=${V}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ce = /'/g, de = /"/g, ye = /^(?:script|style|textarea|title)$/i, Ie = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), c = Ie(1), L = Symbol.for("lit-noChange"), p = Symbol.for("lit-nothing"), pe = /* @__PURE__ */ new WeakMap(), A = k.createTreeWalker(k, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ce = /'/g, de = /"/g, ye = /^(?:script|style|textarea|title)$/i, Pe = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), c = Pe(1), L = Symbol.for("lit-noChange"), p = Symbol.for("lit-nothing"), pe = /* @__PURE__ */ new WeakMap(), A = k.createTreeWalker(k, 129);
 function $e(t, e) {
   if (!X(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return oe !== void 0 ? oe.createHTML(e) : e;
@@ -301,8 +301,8 @@ class U {
           const u = r.textContent.split(w), b = u.length - 1;
           if (b > 0) {
             r.textContent = F ? F.emptyScript : "";
-            for (let x = 0; x < b; x++) r.append(u[x], I()), A.nextNode(), l.push({ type: 2, index: ++a });
-            r.append(u[b], I());
+            for (let x = 0; x < b; x++) r.append(u[x], P()), A.nextNode(), l.push({ type: 2, index: ++a });
+            r.append(u[b], P());
           }
         }
       } else if (r.nodeType === 8) if (r.data === fe) l.push({ type: 2, index: a });
@@ -318,11 +318,11 @@ class U {
     return s.innerHTML = e, s;
   }
 }
-function T(t, e, i = t, s) {
+function E(t, e, i = t, s) {
   if (e === L) return e;
   let r = s !== void 0 ? i._$Co?.[s] : i._$Cl;
   const a = O(e) ? void 0 : e._$litDirective$;
-  return r?.constructor !== a && (r?._$AO?.(!1), a === void 0 ? r = void 0 : (r = new a(t), r._$AT(t, i, s)), s !== void 0 ? (i._$Co ??= [])[s] = r : i._$Cl = r), r !== void 0 && (e = T(t, r._$AS(t, e.values), r, s)), e;
+  return r?.constructor !== a && (r?._$AO?.(!1), a === void 0 ? r = void 0 : (r = new a(t), r._$AT(t, i, s)), s !== void 0 ? (i._$Co ??= [])[s] = r : i._$Cl = r), r !== void 0 && (e = E(t, r._$AS(t, e.values), r, s)), e;
 }
 class Ue {
   constructor(e, i) {
@@ -371,7 +371,7 @@ class N {
     return this._$AB;
   }
   _$AI(e, i = this) {
-    e = T(this, e, i), O(e) ? e === p || e == null || e === "" ? (this._$AH !== p && this._$AR(), this._$AH = p) : e !== this._$AH && e !== L && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Pe(e) ? this.k(e) : this._(e);
+    e = E(this, e, i), O(e) ? e === p || e == null || e === "" ? (this._$AH !== p && this._$AR(), this._$AH = p) : e !== this._$AH && e !== L && this._(e) : e._$litType$ !== void 0 ? this.$(e) : e.nodeType !== void 0 ? this.T(e) : Ie(e) ? this.k(e) : this._(e);
   }
   O(e) {
     return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -398,7 +398,7 @@ class N {
     X(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let s, r = 0;
-    for (const a of e) r === i.length ? i.push(s = new N(this.O(I()), this.O(I()), this, this.options)) : s = i[r], s._$AI(a), r++;
+    for (const a of e) r === i.length ? i.push(s = new N(this.O(P()), this.O(P()), this, this.options)) : s = i[r], s._$AI(a), r++;
     r < i.length && (this._$AR(s && s._$AB.nextSibling, r), i.length = r);
   }
   _$AR(e = this._$AA.nextSibling, i) {
@@ -424,11 +424,11 @@ class q {
   _$AI(e, i = this, s, r) {
     const a = this.strings;
     let o = !1;
-    if (a === void 0) e = T(this, e, i, 0), o = !O(e) || e !== this._$AH && e !== L, o && (this._$AH = e);
+    if (a === void 0) e = E(this, e, i, 0), o = !O(e) || e !== this._$AH && e !== L, o && (this._$AH = e);
     else {
       const d = e;
       let l, f;
-      for (e = a[0], l = 0; l < a.length - 1; l++) f = T(this, d[s + l], i, l), f === L && (f = this._$AH[l]), o ||= !O(f) || f !== this._$AH[l], f === p ? e = p : e !== p && (e += (f ?? "") + a[l + 1]), this._$AH[l] = f;
+      for (e = a[0], l = 0; l < a.length - 1; l++) f = E(this, d[s + l], i, l), f === L && (f = this._$AH[l]), o ||= !O(f) || f !== this._$AH[l], f === p ? e = p : e !== p && (e += (f ?? "") + a[l + 1]), this._$AH[l] = f;
     }
     o && !r && this.j(e);
   }
@@ -457,7 +457,7 @@ class He extends q {
     super(e, i, s, r, a), this.type = 5;
   }
   _$AI(e, i = this) {
-    if ((e = T(this, e, i, 0) ?? p) === L) return;
+    if ((e = E(this, e, i, 0) ?? p) === L) return;
     const s = this._$AH, r = e === p && s !== p || e.capture !== s.capture || e.once !== s.once || e.passive !== s.passive, a = e !== p && (s === p || r);
     r && this.element.removeEventListener(this.name, this, s), a && this.element.addEventListener(this.name, this, e), this._$AH = e;
   }
@@ -473,7 +473,7 @@ class je {
     return this._$AM._$AU;
   }
   _$AI(e) {
-    T(this, e);
+    E(this, e);
   }
 }
 const Fe = Q.litHtmlPolyfillSupport;
@@ -483,7 +483,7 @@ const Be = (t, e, i) => {
   let r = s._$litPart$;
   if (r === void 0) {
     const a = i?.renderBefore ?? null;
-    s._$litPart$ = r = new N(e.insertBefore(I(), a), a, void 0, i ?? {});
+    s._$litPart$ = r = new N(e.insertBefore(P(), a), a, void 0, i ?? {});
   }
   return r._$AI(t), r;
 };
@@ -493,7 +493,7 @@ const Be = (t, e, i) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ee = globalThis;
-class P extends E {
+class I extends T {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -515,9 +515,9 @@ class P extends E {
     return L;
   }
 }
-P._$litElement$ = !0, P.finalized = !0, ee.litElementHydrateSupport?.({ LitElement: P });
+I._$litElement$ = !0, I.finalized = !0, ee.litElementHydrateSupport?.({ LitElement: I });
 const qe = ee.litElementPolyfillSupport;
-qe?.({ LitElement: P });
+qe?.({ LitElement: I });
 (ee.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
@@ -575,7 +575,7 @@ var Ke = Object.defineProperty, Ye = Object.getOwnPropertyDescriptor, g = (t, e,
   return s && r && Ke(e, i, r), r;
 };
 const he = ["breakfast", "lunch", "dinner"], Ze = ["Leftovers", "Eat Out", "Freezer Meal"];
-let h = class extends P {
+let h = class extends I {
   constructor() {
     super(...arguments), this.config = { type: "custom:family-mealie-planner-card" }, this.view = "planner", this.recipes = [], this.mealPlan = [], this.shoppingLists = [], this.loading = !1, this.addDialogOpen = !1, this.recipeDialogOpen = !1, this.recipeLoading = !1, this.search = "", this.noteText = "", this.groceryText = "", this.newListName = "", this.closeAddDialog = () => {
       this.addDialogOpen = !1;
@@ -928,7 +928,7 @@ let h = class extends P {
     if (!(!this.hass || this.loading)) {
       this.loading = !0, this.error = void 0;
       try {
-        await Promise.all([this.loadRecipes(), this.loadMealPlan(), this.loadShoppingLists()]);
+        await this.loadInfo(), await Promise.all([this.loadRecipes(), this.loadMealPlan(), this.loadShoppingLists()]);
       } catch (t) {
         this.error = v(t, "Could not load Mealie data through Home Assistant.");
       } finally {
@@ -936,11 +936,15 @@ let h = class extends P {
       }
     }
   }
+  async loadInfo() {
+    const t = await this.callFamilyMealie("family_mealie/info"), e = $(t);
+    this.imageToken = n(e?.image_token) ?? n(e?.imageToken);
+  }
   async loadRecipes() {
     const t = await this.callFamilyMealie("family_mealie/recipes", {
       limit: this.config.result_limit ?? 300
     });
-    this.recipes = D(t).map(be).filter(Boolean);
+    this.recipes = D(t).map((e) => be(e, this.imageToken)).filter(Boolean);
   }
   async loadMealPlan() {
     const [t, e] = this.dateRange(), i = await this.callFamilyMealie("family_mealie/mealplans", {
@@ -948,7 +952,7 @@ let h = class extends P {
       end_date: e,
       limit: -1
     });
-    this.mealPlan = D(i).map(Xe).filter(Boolean);
+    this.mealPlan = D(i).map((s) => Xe(s, this.imageToken)).filter(Boolean);
   }
   async loadShoppingLists() {
     const t = await this.callFamilyMealie("family_mealie/shopping_lists", { limit: -1 }), e = D(t).map(K).filter(Boolean);
@@ -962,17 +966,17 @@ let h = class extends P {
     const e = Je(t) ? t.recipeSlug : t.slug;
     if (!e) return;
     const i = await this.callFamilyMealie("family_mealie/recipe", { slug: e });
-    return Qe(i);
+    return Qe(i, this.imageToken);
   }
   async addMeal(t) {
     if (t.preventDefault(), !this.selectedSlot) return;
     const e = this.selectedRecipe, i = this.noteText.trim(), s = {
       date: this.selectedSlot.date,
-      entry_type: this.selectedSlot.entryType,
+      entryType: this.selectedSlot.entryType,
       title: "",
       text: ""
     };
-    e?.id ? s.recipe_id = e.id : i && (s.title = i, s.text = i);
+    e?.id ? s.recipeId = e.id : i && (s.title = i, s.text = i);
     try {
       await this.callFamilyMealie("family_mealie/mealplans/create", { payload: s }), this.closeAddDialog(), await this.loadMealPlan();
     } catch (r) {
@@ -1003,14 +1007,14 @@ let h = class extends P {
     const e = this.selectedShoppingList, i = this.groceryText.trim();
     if (!e || !i) return;
     const s = {
-      shopping_list_id: e.id,
+      shoppingListId: e.id,
       checked: !1,
       position: e.items.length,
       quantity: 1,
       note: i,
       display: i,
       extras: {},
-      recipe_references: []
+      recipeReferences: []
     };
     try {
       await this.callFamilyMealie("family_mealie/shopping_items/create", { payload: s }), this.groceryText = "", await this.loadShoppingList(e.id);
@@ -1764,6 +1768,9 @@ g([
 ], h.prototype, "selectedShoppingListId", 2);
 g([
   m()
+], h.prototype, "imageToken", 2);
+g([
+  m()
 ], h.prototype, "loading", 2);
 g([
   m()
@@ -1807,52 +1814,52 @@ g([
 h = g([
   Ve("family-mealie-planner-card")
 ], h);
-function be(t) {
-  const e = $(t);
-  if (!e) return;
-  const i = n(e.name) ?? n(e.recipe_name) ?? n(e.title);
+function be(t, e) {
+  const i = $(t);
   if (!i) return;
-  const s = n(e.slug) ?? n(e.recipe_slug);
+  const s = n(i.name) ?? n(i.recipe_name) ?? n(i.title);
+  if (!s) return;
+  const r = n(i.slug) ?? n(i.recipe_slug);
   return {
-    id: n(e.id) ?? n(e.recipe_id),
-    slug: s,
-    name: i,
-    description: n(e.description),
-    image: xe(s, e),
-    raw: e
+    id: n(i.id) ?? n(i.recipe_id),
+    slug: r,
+    name: s,
+    description: n(i.description),
+    image: xe(r, i, e),
+    raw: i
   };
 }
 function Je(t) {
   return "entryType" in t;
 }
-function Qe(t) {
-  const e = $(t), i = be(e);
-  if (!(!e || !i))
+function Qe(t, e) {
+  const i = $(t), s = be(i, e);
+  if (!(!i || !s))
     return {
-      ...i,
-      servings: n(e.recipe_yield) ?? n(e.servings) ?? n(e.recipeYield),
-      prepTime: W(e.prep_time ?? e.prepTime),
-      cookTime: W(e.cook_time ?? e.cookTime),
-      totalTime: W(e.total_time ?? e.totalTime),
-      ingredients: rt(e.recipe_ingredient ?? e.ingredients ?? e.recipeIngredient),
-      instructions: at(e.recipe_instructions ?? e.instructions ?? e.recipeInstructions)
+      ...s,
+      servings: n(i.recipe_yield) ?? n(i.servings) ?? n(i.recipeYield),
+      prepTime: W(i.prep_time ?? i.prepTime),
+      cookTime: W(i.cook_time ?? i.cookTime),
+      totalTime: W(i.total_time ?? i.totalTime),
+      ingredients: rt(i.recipe_ingredient ?? i.ingredients ?? i.recipeIngredient),
+      instructions: at(i.recipe_instructions ?? i.instructions ?? i.recipeInstructions)
     };
 }
-function Xe(t) {
-  const e = $(t);
-  if (!e) return;
-  const i = $(e.recipe), s = n(e.date) ?? n(e.mealplan_date) ?? n(e.mealplanDate), r = n(e.entry_type) ?? n(e.entryType) ?? n(e.meal_type) ?? n(e.mealType), a = n(e.text) ?? n(e.note), o = n(e.title) || n(i?.name) || a || "Meal", d = n(e.recipe_slug) ?? n(i?.slug);
-  if (!(!s || !r))
+function Xe(t, e) {
+  const i = $(t);
+  if (!i) return;
+  const s = $(i.recipe), r = n(i.date) ?? n(i.mealplan_date) ?? n(i.mealplanDate), a = n(i.entryType) ?? n(i.entry_type) ?? n(i.mealType) ?? n(i.meal_type), o = n(i.text) ?? n(i.note), d = n(i.title) || n(s?.name) || o || "Meal", l = n(i.recipeSlug) ?? n(i.recipe_slug) ?? n(s?.slug);
+  if (!(!r || !a))
     return {
-      id: e.id,
-      date: s.slice(0, 10),
-      entryType: r,
-      title: o,
-      text: a,
-      recipeId: n(e.recipe_id) ?? n(i?.id),
-      recipeSlug: d,
-      image: xe(d, i),
-      raw: e
+      id: i.id,
+      date: r.slice(0, 10),
+      entryType: a,
+      title: d,
+      text: o,
+      recipeId: n(i.recipeId) ?? n(i.recipe_id) ?? n(s?.id),
+      recipeSlug: l,
+      image: xe(l, s, e),
+      raw: i
     };
 }
 function K(t) {
@@ -1860,7 +1867,7 @@ function K(t) {
   if (!e) return;
   const i = n(e.id);
   if (!i) return;
-  const s = n(e.name) ?? "Grocery List", r = D(e.list_items);
+  const s = n(e.name) ?? "Grocery List", r = D(e.listItems ?? e.list_items);
   return {
     id: i,
     name: s,
@@ -1873,13 +1880,13 @@ function et(t) {
   if (!(!e || !i))
     return {
       ...e,
-      items: D(i.list_items).map(tt).filter(Boolean)
+      items: D(i.listItems ?? i.list_items).map(tt).filter(Boolean)
     };
 }
 function tt(t) {
   const e = $(t);
   if (!e) return;
-  const i = n(e.id), s = n(e.shopping_list_id);
+  const i = n(e.id), s = n(e.shoppingListId) ?? n(e.shopping_list_id);
   if (!(!i || !s))
     return {
       id: i,
@@ -1898,7 +1905,7 @@ function it(t) {
 function st(t, e) {
   const i = t.raw;
   return ot({
-    shopping_list_id: t.shoppingListId,
+    shoppingListId: t.shoppingListId,
     checked: e,
     position: i.position ?? 0,
     quantity: i.quantity ?? 1,
@@ -1906,11 +1913,11 @@ function st(t, e) {
     unit: i.unit,
     note: i.note ?? "",
     display: i.display ?? t.title,
-    food_id: i.food_id,
-    label_id: i.label_id,
-    unit_id: i.unit_id,
+    foodId: i.foodId ?? i.food_id,
+    labelId: i.labelId ?? i.label_id,
+    unitId: i.unitId ?? i.unit_id,
     extras: i.extras ?? {},
-    recipe_references: i.recipe_references ?? []
+    recipeReferences: i.recipeReferences ?? i.recipe_references ?? []
   });
 }
 function rt(t) {
@@ -1951,9 +1958,9 @@ function n(t) {
   if (!(t == null || t === ""))
     return String(t);
 }
-function xe(t, e) {
-  const i = n(e?.image) ?? n(e?.image_url) ?? n(e?.recipe_image);
-  return i && /^https?:\/\//i.test(i) ? i : t ? `/api/family_mealie/recipe/${encodeURIComponent(t)}/image` : void 0;
+function xe(t, e, i) {
+  const s = n(e?.image) ?? n(e?.image_url) ?? n(e?.recipe_image);
+  return s && /^https?:\/\//i.test(s) ? s : t && i ? `/api/family_mealie/recipe/${encodeURIComponent(t)}/image?token=${encodeURIComponent(i)}` : void 0;
 }
 function W(t) {
   const e = n(t);

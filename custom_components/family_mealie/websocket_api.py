@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 
 from .api import FamilyMealieApiError, FamilyMealieClient
-from .const import DATA_CLIENTS, DATA_YAML_CLIENT, DOMAIN
+from .const import DATA_CLIENTS, DATA_IMAGE_TOKEN, DATA_YAML_CLIENT, DOMAIN
 
 
 def async_register_websocket_api(hass: HomeAssistant) -> None:
@@ -39,7 +39,13 @@ async def websocket_info(hass: HomeAssistant, connection: websocket_api.ActiveCo
     """Return integration metadata."""
 
     client = _client_from_msg(hass, msg)
-    connection.send_result(msg["id"], {"base_url": client.base_url})
+    connection.send_result(
+        msg["id"],
+        {
+            "base_url": client.base_url,
+            "image_token": hass.data[DOMAIN][DATA_IMAGE_TOKEN],
+        },
+    )
 
 
 @websocket_api.websocket_command(

@@ -88,6 +88,7 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private shoppingLists: ShoppingListSummary[] = [];
   @state() private selectedShoppingList?: ShoppingListDetail;
   @state() private selectedShoppingListId?: string;
+  @state() private imageToken?: string;
   @state() private loading = false;
   @state() private error?: string;
   @state() private addDialogOpen = false;
@@ -507,6 +508,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     this.error = undefined;
 
     try {
+      await this.loadInfo();
       await Promise.all([this.loadRecipes(), this.loadMealPlan(), this.loadShoppingLists()]);
     } catch (error) {
       this.error = errorMessage(error, "Could not load Mealie data through Home Assistant.");
@@ -515,11 +517,17 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
   }
 
+  private async loadInfo(): Promise<void> {
+    const response = await this.callFamilyMealie("family_mealie/info");
+    const object = unwrapObject(response);
+    this.imageToken = stringValue(object?.image_token) ?? stringValue(object?.imageToken);
+  }
+
   private async loadRecipes(): Promise<void> {
     const response = await this.callFamilyMealie("family_mealie/recipes", {
       limit: this.config.result_limit ?? 300,
     });
-    this.recipes = unwrapArray(response).map(normalizeRecipeSummary).filter(Boolean) as RecipeSummary[];
+    this.recipes = unwrapArray(response).map((item) => normalizeRecipeSummary(item, this.imageToken)).filter(Boolean) as RecipeSummary[];
   }
 
   private async loadMealPlan(): Promise<void> {
@@ -529,7 +537,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       end_date: end,
       limit: -1,
     });
-    this.mealPlan = unwrapArray(response).map(normalizeMealPlanItem).filter(Boolean) as MealPlanItem[];
+    this.mealPlan = unwrapArray(response).map((item) => normalizeMealPlanItem(item, this.imageToken)).filter(Boolean) as MealPlanItem[];
   }
 
   private async loadShoppingLists(): Promise<void> {
@@ -559,7 +567,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     const slug = isMealPlanItem(recipe) ? recipe.recipeSlug : recipe.slug;
     if (!slug) return undefined;
     const response = await this.callFamilyMealie("family_mealie/recipe", { slug });
-    return normalizeRecipeDetail(response);
+    return normalizeRecipeDetail(response, this.imageToken);
   }
 
   private async addMeal(event: Event): Promise<void> {
@@ -570,13 +578,13 @@ export class FamilyMealiePlannerCard extends LitElement {
     const note = this.noteText.trim();
     const payload: Record<string, unknown> = {
       date: this.selectedSlot.date,
-      entry_type: this.selectedSlot.entryType,
+      entryType: this.selectedSlot.entryType,
       title: "",
       text: "",
     };
 
     if (recipe?.id) {
-      payload.recipe_id = recipe.id;
+      payload.recipeId = recipe.id;
     } else if (note) {
       payload.title = note;
       payload.text = note;
@@ -628,14 +636,14 @@ export class FamilyMealiePlannerCard extends LitElement {
     if (!list || !text) return;
 
     const payload = {
-      shopping_list_id: list.id,
+      shoppingListId: list.id,
       checked: false,
       position: list.items.length,
       quantity: 1,
       note: text,
       display: text,
       extras: {},
-      recipe_references: [],
+      recipeReferences: [],
     };
 
     try {
@@ -1443,7 +1451,7 @@ export class FamilyMealiePlannerCard extends LitElement {
   `;
 }
 
-function normalizeRecipeSummary(value: unknown): RecipeSummary | undefined {
+function normalizeRecipeSummary(value: unknown, imageToken?: string): RecipeSummary | undefined {
   const object = unwrapObject(value);
   if (!object) return undefined;
   const name = stringValue(object.name) ?? stringValue(object.recipe_name) ?? stringValue(object.title);
@@ -1454,7 +1462,7 @@ function normalizeRecipeSummary(value: unknown): RecipeSummary | undefined {
     slug,
     name,
     description: stringValue(object.description),
-    image: recipeImageUrl(slug, object),
+    image: recipeImageUrl(slug, object, imageToken),
     raw: object,
   };
 }
@@ -1463,9 +1471,9 @@ function isMealPlanItem(value: RecipeSummary | MealPlanItem): value is MealPlanI
   return "entryType" in value;
 }
 
-function normalizeRecipeDetail(value: unknown): RecipeDetail | undefined {
+function normalizeRecipeDetail(value: unknown, imageToken?: string): RecipeDetail | undefined {
   const object = unwrapObject(value);
-  const summary = normalizeRecipeSummary(object);
+  const summary = normalizeRecipeSummary(object, imageToken);
   if (!object || !summary) return undefined;
 
   return {
@@ -1479,16 +1487,16 @@ function normalizeRecipeDetail(value: unknown): RecipeDetail | undefined {
   };
 }
 
-function normalizeMealPlanItem(value: unknown): MealPlanItem | undefined {
+function normalizeMealPlanItem(value: unknown, imageToken?: string): MealPlanItem | undefined {
   const object = unwrapObject(value);
   if (!object) return undefined;
 
   const recipe = unwrapObject(object.recipe);
   const date = stringValue(object.date) ?? stringValue(object.mealplan_date) ?? stringValue(object.mealplanDate);
-  const entryType = stringValue(object.entry_type) ?? stringValue(object.entryType) ?? stringValue(object.meal_type) ?? stringValue(object.mealType);
+  const entryType = stringValue(object.entryType) ?? stringValue(object.entry_type) ?? stringValue(object.mealType) ?? stringValue(object.meal_type);
   const text = stringValue(object.text) ?? stringValue(object.note);
   const title = stringValue(object.title) || stringValue(recipe?.name) || text || "Meal";
-  const slug = stringValue(object.recipe_slug) ?? stringValue(recipe?.slug);
+  const slug = stringValue(object.recipeSlug) ?? stringValue(object.recipe_slug) ?? stringValue(recipe?.slug);
 
   if (!date || !entryType) return undefined;
 
@@ -1498,9 +1506,9 @@ function normalizeMealPlanItem(value: unknown): MealPlanItem | undefined {
     entryType,
     title,
     text,
-    recipeId: stringValue(object.recipe_id) ?? stringValue(recipe?.id),
+    recipeId: stringValue(object.recipeId) ?? stringValue(object.recipe_id) ?? stringValue(recipe?.id),
     recipeSlug: slug,
-    image: recipeImageUrl(slug, recipe),
+    image: recipeImageUrl(slug, recipe, imageToken),
     raw: object,
   };
 }
@@ -1511,7 +1519,7 @@ function normalizeShoppingListSummary(value: unknown): ShoppingListSummary | und
   const id = stringValue(object.id);
   if (!id) return undefined;
   const name = stringValue(object.name) ?? "Grocery List";
-  const items = unwrapArray(object.list_items);
+  const items = unwrapArray(object.listItems ?? object.list_items);
   return {
     id,
     name,
@@ -1526,7 +1534,7 @@ function normalizeShoppingListDetail(value: unknown): ShoppingListDetail | undef
   if (!summary || !object) return undefined;
   return {
     ...summary,
-    items: unwrapArray(object.list_items).map(normalizeShoppingListItem).filter(Boolean) as ShoppingListItem[],
+    items: unwrapArray(object.listItems ?? object.list_items).map(normalizeShoppingListItem).filter(Boolean) as ShoppingListItem[],
   };
 }
 
@@ -1534,7 +1542,7 @@ function normalizeShoppingListItem(value: unknown): ShoppingListItem | undefined
   const object = unwrapObject(value);
   if (!object) return undefined;
   const id = stringValue(object.id);
-  const shoppingListId = stringValue(object.shopping_list_id);
+  const shoppingListId = stringValue(object.shoppingListId) ?? stringValue(object.shopping_list_id);
   if (!id || !shoppingListId) return undefined;
 
   return {
@@ -1560,7 +1568,7 @@ function shoppingItemTitle(object: Record<string, unknown>): string {
 function shoppingItemUpdatePayload(item: ShoppingListItem, checked: boolean): Record<string, unknown> {
   const raw = item.raw;
   return compactObject({
-    shopping_list_id: item.shoppingListId,
+    shoppingListId: item.shoppingListId,
     checked,
     position: raw.position ?? 0,
     quantity: raw.quantity ?? 1,
@@ -1568,11 +1576,11 @@ function shoppingItemUpdatePayload(item: ShoppingListItem, checked: boolean): Re
     unit: raw.unit,
     note: raw.note ?? "",
     display: raw.display ?? item.title,
-    food_id: raw.food_id,
-    label_id: raw.label_id,
-    unit_id: raw.unit_id,
+    foodId: raw.foodId ?? raw.food_id,
+    labelId: raw.labelId ?? raw.label_id,
+    unitId: raw.unitId ?? raw.unit_id,
     extras: raw.extras ?? {},
-    recipe_references: raw.recipe_references ?? [],
+    recipeReferences: raw.recipeReferences ?? raw.recipe_references ?? [],
   });
 }
 
@@ -1629,10 +1637,10 @@ function stringValue(value: unknown): string | undefined {
   return String(value);
 }
 
-function recipeImageUrl(slug: string | undefined, object: Record<string, unknown> | undefined): string | undefined {
+function recipeImageUrl(slug: string | undefined, object: Record<string, unknown> | undefined, imageToken?: string): string | undefined {
   const image = stringValue(object?.image) ?? stringValue(object?.image_url) ?? stringValue(object?.recipe_image);
   if (image && /^https?:\/\//i.test(image)) return image;
-  return slug ? `/api/family_mealie/recipe/${encodeURIComponent(slug)}/image` : undefined;
+  return slug && imageToken ? `/api/family_mealie/recipe/${encodeURIComponent(slug)}/image?token=${encodeURIComponent(imageToken)}` : undefined;
 }
 
 function formatDuration(value: unknown): string | undefined {

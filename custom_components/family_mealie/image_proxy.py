@@ -8,7 +8,7 @@ from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
 
 from .api import FamilyMealieApiError, FamilyMealieClient
-from .const import DATA_CLIENTS, DATA_YAML_CLIENT, DOMAIN
+from .const import DATA_CLIENTS, DATA_IMAGE_TOKEN, DATA_YAML_CLIENT, DOMAIN
 
 
 class FamilyMealieImageView(HomeAssistantView):
@@ -16,12 +16,15 @@ class FamilyMealieImageView(HomeAssistantView):
 
     url = "/api/family_mealie/recipe/{slug}/image"
     name = "api:family_mealie:recipe_image"
-    requires_auth = True
+    requires_auth = False
 
     async def get(self, request: web.Request, slug: str) -> web.Response:
         """Return an image from Mealie."""
 
         hass: HomeAssistant = request.app["hass"]
+        if request.query.get("token") != hass.data[DOMAIN].get(DATA_IMAGE_TOKEN):
+            raise web.HTTPUnauthorized()
+
         client = _first_client(hass)
 
         try:

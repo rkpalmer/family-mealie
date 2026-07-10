@@ -150,7 +150,7 @@ class FamilyMealieClient:
 
         return await self.post(
             f"/api/households/shopping/lists/{quote(list_id, safe='')}/recipe",
-            json=[{"recipe_id": recipe_id, "recipe_increment_quantity": scale}],
+            json=[{"recipeId": recipe_id, "recipeIncrementQuantity": scale}],
         )
 
     async def get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:

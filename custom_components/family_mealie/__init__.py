@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from secrets import token_urlsafe
 from typing import Any
 
 import voluptuous as vol
@@ -19,6 +20,7 @@ from .const import (
     CONF_AUTH_HEADER,
     CONF_URL,
     DATA_CLIENTS,
+    DATA_IMAGE_TOKEN,
     DATA_YAML_CLIENT,
     DEFAULT_NAME,
     DOMAIN,
@@ -46,6 +48,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up Family Mealie."""
 
     hass.data.setdefault(DOMAIN, {DATA_CLIENTS: {}})
+    hass.data[DOMAIN].setdefault(DATA_IMAGE_TOKEN, token_urlsafe(32))
 
     await _async_register_frontend(hass)
     hass.http.register_view(FamilyMealieImageView)
