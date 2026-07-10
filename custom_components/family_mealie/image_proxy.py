@@ -14,11 +14,11 @@ from .const import DATA_CLIENTS, DATA_IMAGE_TOKEN, DATA_YAML_CLIENT, DOMAIN
 class FamilyMealieImageView(HomeAssistantView):
     """Proxy Mealie recipe images through Home Assistant."""
 
-    url = "/api/family_mealie/recipe/{slug}/image"
+    url = "/api/family_mealie/recipe/{recipe_id}/image"
     name = "api:family_mealie:recipe_image"
     requires_auth = False
 
-    async def get(self, request: web.Request, slug: str) -> web.Response:
+    async def get(self, request: web.Request, recipe_id: str) -> web.Response:
         """Return an image from Mealie."""
 
         hass: HomeAssistant = request.app["hass"]
@@ -28,7 +28,7 @@ class FamilyMealieImageView(HomeAssistantView):
         client = _first_client(hass)
 
         try:
-            image = await client.recipe_image(slug)
+            image = await client.recipe_image(recipe_id)
         except FamilyMealieApiError as err:
             raise web.HTTPBadGateway(text=str(err)) from err
 

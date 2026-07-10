@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+import re
 from typing import Any
 from urllib.parse import quote
 
@@ -63,12 +64,12 @@ class FamilyMealieClient:
 
         return await self.get(f"/api/recipes/{quote(slug, safe='')}")
 
-    async def recipe_image(self, slug: str) -> MealieImage:
-        """Return a recipe image by slug."""
+    async def recipe_image(self, recipe_id: str) -> MealieImage:
+        """Return a recipe image by recipe id."""
 
         response = await self.request(
             "GET",
-            f"/api/recipes/{quote(slug, safe='')}/image",
+            f"/api/media/recipes/{quote(recipe_id, safe='')}/images/original.webp",
             raw_response=True,
         )
         assert isinstance(response, ClientResponse)
@@ -98,7 +99,7 @@ class FamilyMealieClient:
     async def create_mealplan(self, payload: dict[str, Any]) -> dict[str, Any]:
         """Create a meal-plan entry."""
 
-        return await self.post("/api/households/mealplans", json=payload)
+        return await self.post_with_alias_fallback("/api/households/mealplans", payload)
 
     async def update_mealplan(self, meal_id: int | str, payload: dict[str, Any]) -> dict[str, Any]:
         """Update a meal-plan entry."""
@@ -128,12 +129,12 @@ class FamilyMealieClient:
     async def create_shopping_item(self, payload: dict[str, Any]) -> dict[str, Any]:
         """Create one shopping list item."""
 
-        return await self.post("/api/households/shopping/items", json=payload)
+        return await self.post_with_alias_fallback("/api/households/shopping/items", payload)
 
     async def update_shopping_item(self, item_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         """Update one shopping list item."""
 
-        return await self.put(f"/api/households/shopping/items/{quote(item_id, safe='')}", json=payload)
+        return await self.put_with_alias_fallback(f"/api/households/shopping/items/{quote(item_id, safe='')}", payload)
 
     async def delete_shopping_item(self, item_id: str) -> dict[str, Any]:
         """Delete one shopping list item."""
@@ -148,9 +149,10 @@ class FamilyMealieClient:
     ) -> dict[str, Any]:
         """Add recipe ingredients to a shopping list."""
 
-        return await self.post(
+        payload = [{"recipeId": recipe_id, "recipeIncrementQuantity": scale}]
+        return await self.post_with_alias_fallback(
             f"/api/households/shopping/lists/{quote(list_id, safe='')}/recipe",
-            json=[{"recipeId": recipe_id, "recipeIncrementQuantity": scale}],
+            payload,
         )
 
     async def get(self, path: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -167,6 +169,26 @@ class FamilyMealieClient:
         """PUT JSON to Mealie."""
 
         return await self.request("PUT", path, json=json)
+
+    async def post_with_alias_fallback(self, path: str, payload: Any) -> dict[str, Any]:
+        """POST JSON, retrying with snake_case aliases when Mealie rejects field names."""
+
+        try:
+            return await self.post(path, json=payload)
+        except FamilyMealieApiError as err:
+            if not looks_like_validation_error(err):
+                raise
+            return await self.post(path, json=camel_to_snake(payload))
+
+    async def put_with_alias_fallback(self, path: str, payload: Any) -> dict[str, Any]:
+        """PUT JSON, retrying with snake_case aliases when Mealie rejects field names."""
+
+        try:
+            return await self.put(path, json=payload)
+        except FamilyMealieApiError as err:
+            if not looks_like_validation_error(err):
+                raise
+            return await self.put(path, json=camel_to_snake(payload))
 
     async def delete(self, path: str) -> dict[str, Any]:
         """DELETE JSON from Mealie."""
@@ -251,3 +273,25 @@ def compact(value: dict[str, Any]) -> dict[str, Any]:
     """Remove empty values from query params."""
 
     return {key: item for key, item in value.items() if item is not None and item != ""}
+
+
+def looks_like_validation_error(error: FamilyMealieApiError) -> bool:
+    """Return true when retrying with alternate aliases might help."""
+
+    return any(token in str(error).lower() for token in ("400", "422", "validation", "field required", "extra"))
+
+
+def camel_to_snake(value: Any) -> Any:
+    """Recursively convert camelCase dictionary keys to snake_case."""
+
+    if isinstance(value, list):
+        return [camel_to_snake(item) for item in value]
+    if isinstance(value, dict):
+        return {to_snake_case(key): camel_to_snake(item) for key, item in value.items()}
+    return value
+
+
+def to_snake_case(value: str) -> str:
+    """Convert a camelCase key to snake_case."""
+
+    return re.sub(r"(?<!^)(?=[A-Z])", "_", value).lower()

@@ -201,8 +201,8 @@ export class FamilyMealiePlannerCard extends LitElement {
                 <span>${this.formatWeekday(day)}</span>
                 <strong>${this.formatMonthDay(day)}</strong>
               </div>
-              <div class="slots">
-                ${this.entryTypes().map((entryType) => this.renderSlot(day, entryType))}
+              <div class="meal-sections">
+                ${this.entryTypes().map((entryType) => this.renderMealSection(day, entryType))}
               </div>
             </article>
           `,
@@ -211,28 +211,46 @@ export class FamilyMealiePlannerCard extends LitElement {
     `;
   }
 
-  private renderSlot(day: Date, entryType: string) {
+  private renderMealSection(day: Date, entryType: string) {
     const date = toDateString(day);
-    const meal = this.mealFor(date, entryType);
-
-    if (!meal) {
-      return html`
-        <button class="slot empty" @click=${() => this.openAddDialog({ date, entryType })}>
-          <span>${titleCase(entryType)}</span>
-          <strong>+ Add</strong>
-        </button>
-      `;
-    }
+    const meals = this.mealsFor(date, entryType);
 
     return html`
-      <div class="slot planned">
-        <button class="meal-main" @click=${() => this.openMealDialog(meal)}>
+      <section class="meal-section">
+        <header>
           <span>${titleCase(entryType)}</span>
+          <button class="add-inline" title=${`Add ${entryType}`} @click=${() => this.openAddDialog({ date, entryType })}>+</button>
+        </header>
+        <div class="meal-list">
+          ${meals.length
+              ? meals.map((meal) => this.renderMealCard(meal))
+            : html`<button class="empty-line" @click=${() => this.openAddDialog({ date, entryType })}>No plan</button>`}
+        </div>
+      </section>
+    `;
+  }
+
+  private renderMealOption(recipe: RecipeSummary) {
+    return html`
+      <button
+        class=${this.selectedRecipeKey(recipe) === this.selectedRecipeKey(this.selectedRecipe) ? "selected" : ""}
+        @click=${() => this.chooseRecipe(recipe)}
+      >
+        ${recipe.image ? html`<img src=${recipe.image} alt="" loading="lazy" />` : html`<span class="thumb">${recipe.name.slice(0, 1)}</span>`}
+        <span>${recipe.name}</span>
+      </button>
+    `;
+  }
+
+  private renderMealCard(meal: MealPlanItem) {
+    return html`
+      <article class="meal-pill">
+        <button class="meal-open" @click=${() => this.openMealDialog(meal)}>
           <strong>${meal.title}</strong>
           ${meal.text && meal.text !== meal.title ? html`<small>${meal.text}</small>` : nothing}
         </button>
-        <button class="delete-button" title="Remove meal" @click=${() => this.confirmDeleteMeal(meal)}>Remove</button>
-      </div>
+        <button class="remove-icon" title="Remove meal" @click=${() => this.confirmDeleteMeal(meal)}>x</button>
+      </article>
     `;
   }
 
@@ -378,13 +396,7 @@ export class FamilyMealiePlannerCard extends LitElement {
           <div class="recipe-results">
             ${matches.map(
               (recipe) => html`
-                <button
-                  class=${this.selectedRecipeKey(recipe) === this.selectedRecipeKey(this.selectedRecipe) ? "selected" : ""}
-                  @click=${() => this.chooseRecipe(recipe)}
-                >
-                  ${recipe.image ? html`<img src=${recipe.image} alt="" loading="lazy" />` : html`<span class="thumb">${recipe.name.slice(0, 1)}</span>`}
-                  <span>${recipe.name}</span>
-                </button>
+                ${this.renderMealOption(recipe)}
               `,
             )}
           </div>
@@ -800,8 +812,8 @@ export class FamilyMealiePlannerCard extends LitElement {
     return recipe?.id ?? recipe?.slug ?? recipe?.name;
   }
 
-  private mealFor(date: string, entryType: string): MealPlanItem | undefined {
-    return this.mealPlan.find((meal) => meal.date === date && meal.entryType.toLocaleLowerCase() === entryType.toLocaleLowerCase());
+  private mealsFor(date: string, entryType: string): MealPlanItem[] {
+    return this.mealPlan.filter((meal) => meal.date === date && meal.entryType.toLocaleLowerCase() === entryType.toLocaleLowerCase());
   }
 
   private daysToShow(): Date[] {
@@ -909,7 +921,6 @@ export class FamilyMealiePlannerCard extends LitElement {
 
     .topbar p,
     header span,
-    .slot span,
     .stats span,
     .note-area span {
       color: var(--meal-card-muted);
@@ -965,7 +976,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
 
     .danger,
-    .delete-button,
+    .remove-icon,
     .delete-inline {
       color: var(--meal-card-warning);
       border-color: color-mix(in srgb, var(--meal-card-warning) 32%, var(--meal-card-line));
@@ -1041,68 +1052,113 @@ export class FamilyMealiePlannerCard extends LitElement {
       font-size: 22px;
     }
 
-    .slots {
+    .meal-sections {
       display: grid;
-      gap: 10px;
-      padding: 10px;
+      gap: 0;
+      padding: 6px 0;
     }
 
-    .slot {
-      width: 100%;
-      min-height: 112px;
-      text-align: left;
-    }
-
-    .slot.empty {
+    .meal-section {
       display: grid;
-      align-content: center;
-      gap: 10px;
-      padding: 14px;
-      border-style: dashed;
-      background: color-mix(in srgb, var(--meal-card-accent) 5%, var(--meal-card-surface));
+      gap: 8px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--meal-card-line);
     }
 
-    .slot.empty strong {
-      font-size: 20px;
+    .meal-section:first-child {
+      border-top: 0;
+    }
+
+    .meal-section header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .meal-section header span {
+      color: var(--meal-card-muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .add-inline,
+    .remove-icon {
+      width: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .add-inline {
+      border-color: color-mix(in srgb, var(--meal-card-accent) 35%, var(--meal-card-line));
       color: var(--meal-card-accent);
+      background: color-mix(in srgb, var(--meal-card-accent) 8%, var(--meal-card-surface));
     }
 
-    .slot.planned {
+    .meal-list {
       display: grid;
-      grid-template-rows: 1fr auto;
+      gap: 8px;
+    }
+
+    .empty-line {
+      min-height: 42px;
+      padding: 0 12px;
+      border-style: dashed;
+      text-align: left;
+      color: var(--meal-card-muted);
+      background: color-mix(in srgb, var(--primary-background-color, #f6f6f6) 60%, var(--meal-card-surface));
+      font-weight: 750;
+    }
+
+    .meal-pill {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: stretch;
       overflow: hidden;
+      border: 1px solid var(--meal-card-line);
+      border-radius: var(--meal-card-radius);
       background: var(--meal-card-surface);
     }
 
-    .meal-main {
-      min-height: 0;
+    .meal-open {
+      min-height: 58px;
       border: 0;
       border-radius: 0;
-      padding: 14px;
+      padding: 10px 12px;
       text-align: left;
       background: transparent;
     }
 
-    .meal-main strong {
+    .meal-open strong,
+    .meal-open small {
       display: block;
-      margin-top: 8px;
-      font-size: 18px;
-      line-height: 1.2;
       overflow-wrap: anywhere;
     }
 
-    .meal-main small {
-      display: block;
-      margin-top: 8px;
-      color: var(--meal-card-muted);
-      font-size: 14px;
+    .meal-open strong {
+      font-size: 17px;
+      line-height: 1.2;
     }
 
-    .delete-button {
-      min-height: 40px;
-      border-width: 1px 0 0;
-      border-radius: 0;
+    .meal-open small {
+      margin-top: 4px;
+      color: var(--meal-card-muted);
       font-size: 13px;
+    }
+
+    .remove-icon {
+      width: 44px;
+      min-width: 44px;
+      min-height: 100%;
+      border-width: 0 0 0 1px;
+      border-radius: 0;
+      font-size: 20px;
     }
 
     .recipe-toolbar {
@@ -1457,12 +1513,13 @@ function normalizeRecipeSummary(value: unknown, imageToken?: string): RecipeSumm
   const name = stringValue(object.name) ?? stringValue(object.recipe_name) ?? stringValue(object.title);
   if (!name) return undefined;
   const slug = stringValue(object.slug) ?? stringValue(object.recipe_slug);
+  const id = stringValue(object.id) ?? stringValue(object.recipe_id);
   return {
-    id: stringValue(object.id) ?? stringValue(object.recipe_id),
+    id,
     slug,
     name,
     description: stringValue(object.description),
-    image: recipeImageUrl(slug, object, imageToken),
+    image: recipeImageUrl(id, object, imageToken),
     raw: object,
   };
 }
@@ -1508,7 +1565,7 @@ function normalizeMealPlanItem(value: unknown, imageToken?: string): MealPlanIte
     text,
     recipeId: stringValue(object.recipeId) ?? stringValue(object.recipe_id) ?? stringValue(recipe?.id),
     recipeSlug: slug,
-    image: recipeImageUrl(slug, recipe, imageToken),
+    image: recipeImageUrl(stringValue(object.recipeId) ?? stringValue(object.recipe_id) ?? stringValue(recipe?.id), recipe, imageToken),
     raw: object,
   };
 }
@@ -1637,10 +1694,10 @@ function stringValue(value: unknown): string | undefined {
   return String(value);
 }
 
-function recipeImageUrl(slug: string | undefined, object: Record<string, unknown> | undefined, imageToken?: string): string | undefined {
+function recipeImageUrl(recipeId: string | undefined, object: Record<string, unknown> | undefined, imageToken?: string): string | undefined {
   const image = stringValue(object?.image) ?? stringValue(object?.image_url) ?? stringValue(object?.recipe_image);
   if (image && /^https?:\/\//i.test(image)) return image;
-  return slug && imageToken ? `/api/family_mealie/recipe/${encodeURIComponent(slug)}/image?token=${encodeURIComponent(imageToken)}` : undefined;
+  return recipeId && image && imageToken ? `/api/family_mealie/recipe/${encodeURIComponent(recipeId)}/image?token=${encodeURIComponent(imageToken)}` : undefined;
 }
 
 function formatDuration(value: unknown): string | undefined {
