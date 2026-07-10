@@ -104,7 +104,7 @@ class FamilyMealieClient:
     async def update_mealplan(self, meal_id: int | str, payload: dict[str, Any]) -> dict[str, Any]:
         """Update a meal-plan entry."""
 
-        return await self.put(f"/api/households/mealplans/{meal_id}", json=payload)
+        return await self.put_with_alias_fallback(f"/api/households/mealplans/{meal_id}", payload)
 
     async def delete_mealplan(self, meal_id: int | str) -> dict[str, Any]:
         """Delete a meal-plan entry."""

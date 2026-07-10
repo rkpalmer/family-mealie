@@ -100,6 +100,9 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private recipeLoading = false;
   @state() private search = "";
   @state() private noteText = "";
+  @state() private noteEditTitle = "";
+  @state() private noteEditText = "";
+  @state() private noteSaving = false;
   @state() private selectedRecipe?: RecipeSummary;
   @state() private groceryText = "";
   @state() private newListName = "";
@@ -159,9 +162,14 @@ export class FamilyMealiePlannerCard extends LitElement {
               <h2>${this.config.title}</h2>
               <p>${this.subtitle()}</p>
             </div>
-            <button class="primary action" title="Refresh" @click=${this.refreshAll} ?disabled=${this.loading}>
-              ${this.loading ? "Refreshing" : "Refresh"}
-            </button>
+            <div class="top-actions">
+              ${this.view === "planner"
+                ? html`<button class="secondary action" @click=${this.openDefaultAddDialog}>Add meal</button>`
+                : nothing}
+              <button class="primary action" title="Refresh" @click=${this.refreshAll} ?disabled=${this.loading}>
+                ${this.loading ? "Refreshing" : "Refresh"}
+              </button>
+            </div>
           </header>
 
           <nav class="tabs">
@@ -194,37 +202,42 @@ export class FamilyMealiePlannerCard extends LitElement {
 
     return html`
       <div class="board" style=${`--day-count:${days.length}`}>
-        ${days.map(
-          (day) => html`
-            <article class="day">
-              <div class="day-head">
-                <span>${this.formatWeekday(day)}</span>
-                <strong>${this.formatMonthDay(day)}</strong>
-              </div>
-              <div class="meal-sections">
-                ${this.entryTypes().map((entryType) => this.renderMealSection(day, entryType))}
-              </div>
-            </article>
-          `,
-        )}
+        ${days.map((day) => this.renderDay(day))}
       </div>
+    `;
+  }
+
+  private renderDay(day: Date) {
+    const date = toDateString(day);
+    const hasMeals = this.hasMealsForDay(date);
+
+    return html`
+      <article class="day">
+        <div class="day-head">
+          <span>${this.formatWeekday(day)}</span>
+          <strong>${this.formatMonthDay(day)}</strong>
+        </div>
+        <div class="meal-sections">
+          ${hasMeals
+            ? this.entryTypes().map((entryType) => this.renderMealSection(day, entryType))
+            : html`<div class="empty-day">No meals planned</div>`}
+        </div>
+      </article>
     `;
   }
 
   private renderMealSection(day: Date, entryType: string) {
     const date = toDateString(day);
     const meals = this.mealsFor(date, entryType);
+    if (!meals.length) return nothing;
 
     return html`
       <section class="meal-section">
         <header>
           <span>${titleCase(entryType)}</span>
-          <button class="add-inline" title=${`Add ${entryType}`} @click=${() => this.openAddDialog({ date, entryType })}>+</button>
         </header>
         <div class="meal-list">
-          ${meals.length
-              ? meals.map((meal) => this.renderMealCard(meal))
-            : html`<button class="empty-line" @click=${() => this.openAddDialog({ date, entryType })}>No plan</button>`}
+          ${meals.map((meal) => this.renderMealCard(meal))}
         </div>
       </section>
     `;
@@ -233,6 +246,7 @@ export class FamilyMealiePlannerCard extends LitElement {
   private renderMealOption(recipe: RecipeSummary) {
     return html`
       <button
+        type="button"
         class=${this.selectedRecipeKey(recipe) === this.selectedRecipeKey(this.selectedRecipe) ? "selected" : ""}
         @click=${() => this.chooseRecipe(recipe)}
       >
@@ -244,13 +258,10 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private renderMealCard(meal: MealPlanItem) {
     return html`
-      <article class="meal-pill">
-        <button class="meal-open" @click=${() => this.openMealDialog(meal)}>
-          <strong>${meal.title}</strong>
-          ${meal.text && meal.text !== meal.title ? html`<small>${meal.text}</small>` : nothing}
-        </button>
-        <button class="remove-icon" title="Remove meal" @click=${() => this.confirmDeleteMeal(meal)}>x</button>
-      </article>
+      <button class="meal-pill" @click=${() => this.openMealDialog(meal)}>
+        <strong>${meal.title}</strong>
+        ${meal.text && meal.text !== meal.title ? html`<small>${meal.text}</small>` : nothing}
+      </button>
     `;
   }
 
@@ -367,7 +378,7 @@ export class FamilyMealiePlannerCard extends LitElement {
               <span>Add meal</span>
               <h3>${titleCase(this.selectedSlot.entryType)} · ${this.formatDialogDate(this.selectedSlot.date)}</h3>
             </div>
-            <button class="plain" @click=${this.closeAddDialog}>Close</button>
+            <button type="button" class="plain" @click=${this.closeAddDialog}>Close</button>
           </header>
 
           <div class="field-row">
@@ -406,7 +417,7 @@ export class FamilyMealiePlannerCard extends LitElement {
             <div class="chips">
               ${QUICK_NOTES.map(
                 (note) => html`
-                  <button @click=${() => this.chooseNote(note)}>
+                  <button type="button" @click=${() => this.chooseNote(note)}>
                     ${note}
                   </button>
                 `,
@@ -424,7 +435,7 @@ export class FamilyMealiePlannerCard extends LitElement {
           </div>
 
           <footer>
-            <button class="primary" @click=${this.addMeal} ?disabled=${!this.selectedRecipe && !this.noteText.trim()}>
+            <button type="button" class="primary" @click=${this.addMeal} ?disabled=${!this.selectedRecipe && !this.noteText.trim()}>
               Add to plan
             </button>
           </footer>
@@ -438,6 +449,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     const detail = this.recipeDetail;
     const title = this.selectedMeal?.title ?? this.selectedRecipeForDialog?.name ?? "Recipe";
     const entryType = this.selectedMeal?.entryType;
+    const isNoteMeal = Boolean(this.selectedMeal && !this.selectedMeal.recipeSlug && !this.selectedMeal.recipeId);
 
     return html`
       <dialog class="dialog recipe" @cancel=${this.closeRecipeDialog}>
@@ -447,11 +459,13 @@ export class FamilyMealiePlannerCard extends LitElement {
               <span>${entryType ? titleCase(entryType) : "Recipe"}</span>
               <h3>${title}</h3>
             </div>
-            <button class="plain" @click=${this.closeRecipeDialog}>Close</button>
+            <button type="button" class="plain" @click=${this.closeRecipeDialog}>Close</button>
           </header>
 
           ${this.recipeLoading
             ? html`<div class="loading">Loading recipe...</div>`
+            : isNoteMeal
+              ? this.renderNoteEditor()
             : html`
                 ${detail?.image || this.selectedMeal?.image
                   ? html`<img class="hero-image" src=${detail?.image ?? this.selectedMeal?.image ?? ""} alt="" />`
@@ -490,7 +504,14 @@ export class FamilyMealiePlannerCard extends LitElement {
               `}
 
           <footer class="recipe-actions">
-            ${detail?.id && this.shoppingLists.length
+            ${isNoteMeal
+              ? html`
+                  <button class="primary" @click=${this.saveNoteMeal} ?disabled=${this.noteSaving || !this.noteEditTitle.trim()}>
+                    ${this.noteSaving ? "Saving" : "Save note"}
+                  </button>
+                `
+              : nothing}
+            ${!isNoteMeal && detail?.id && this.shoppingLists.length
               ? html`
                   <select .value=${this.selectedShoppingListId ?? ""} @change=${(event: Event) => this.selectShoppingList(inputValue(event))}>
                     ${this.shoppingLists.map((list) => html`<option .value=${list.id}>${list.name}</option>`)}
@@ -506,6 +527,28 @@ export class FamilyMealiePlannerCard extends LitElement {
           </footer>
         </article>
       </dialog>
+    `;
+  }
+
+  private renderNoteEditor() {
+    return html`
+      <section class="note-editor">
+        <label>
+          Title
+          <input
+            type="text"
+            .value=${this.noteEditTitle}
+            @input=${(event: InputEvent) => (this.noteEditTitle = inputValue(event))}
+          />
+        </label>
+        <label>
+          Note
+          <textarea
+            .value=${this.noteEditText}
+            @input=${(event: InputEvent) => (this.noteEditText = inputValue(event))}
+          ></textarea>
+        </label>
+      </section>
     `;
   }
 
@@ -608,6 +651,29 @@ export class FamilyMealiePlannerCard extends LitElement {
       await this.loadMealPlan();
     } catch (error) {
       this.error = errorMessage(error, "Could not add meal.");
+    }
+  }
+
+  private async saveNoteMeal(event: Event): Promise<void> {
+    event.preventDefault();
+    const meal = this.selectedMeal;
+    if (!meal?.id) return;
+
+    const title = this.noteEditTitle.trim();
+    if (!title) return;
+    const text = this.noteEditText.trim() || title;
+    const payload = mealPlanNotePayload(meal, title, text);
+
+    this.noteSaving = true;
+    try {
+      await this.callFamilyMealie("family_mealie/mealplans/update", { meal_id: meal.id, payload });
+      this.selectedMeal = { ...meal, title, text, raw: { ...meal.raw, title, text } };
+      await this.loadMealPlan();
+      this.closeRecipeDialog();
+    } catch (error) {
+      this.error = errorMessage(error, "Could not save meal note.");
+    } finally {
+      this.noteSaving = false;
     }
   }
 
@@ -728,6 +794,12 @@ export class FamilyMealiePlannerCard extends LitElement {
     this.addDialogOpen = true;
   }
 
+  private openDefaultAddDialog = (): void => {
+    const firstDay = this.daysToShow()[0] ?? startOfDay(new Date());
+    const entryType = this.entryTypes()[0] ?? DEFAULT_ENTRY_TYPES[0];
+    this.openAddDialog({ date: toDateString(firstDay), entryType });
+  };
+
   private closeAddDialog = (): void => {
     this.addDialogOpen = false;
   };
@@ -736,6 +808,8 @@ export class FamilyMealiePlannerCard extends LitElement {
     this.selectedMeal = meal;
     this.selectedRecipeForDialog = undefined;
     this.recipeDetail = undefined;
+    this.noteEditTitle = meal.title;
+    this.noteEditText = meal.text ?? meal.title;
     this.recipeDialogOpen = true;
 
     if (meal.recipeSlug) {
@@ -814,6 +888,10 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private mealsFor(date: string, entryType: string): MealPlanItem[] {
     return this.mealPlan.filter((meal) => meal.date === date && meal.entryType.toLocaleLowerCase() === entryType.toLocaleLowerCase());
+  }
+
+  private hasMealsForDay(date: string): boolean {
+    return this.mealPlan.some((meal) => meal.date === date);
   }
 
   private daysToShow(): Date[] {
@@ -902,6 +980,12 @@ export class FamilyMealiePlannerCard extends LitElement {
       gap: 16px;
     }
 
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     h2,
     h3,
     h4,
@@ -932,7 +1016,8 @@ export class FamilyMealiePlannerCard extends LitElement {
 
     button,
     input,
-    select {
+    select,
+    textarea {
       font: inherit;
     }
 
@@ -958,6 +1043,14 @@ export class FamilyMealiePlannerCard extends LitElement {
       padding: 0 18px;
     }
 
+    .secondary {
+      border-color: color-mix(in srgb, var(--meal-card-accent) 30%, var(--meal-card-line));
+      background: color-mix(in srgb, var(--meal-card-accent) 10%, var(--meal-card-surface));
+      color: var(--meal-card-accent);
+      font-weight: 800;
+      padding: 0 18px;
+    }
+
     .action {
       min-width: 116px;
     }
@@ -976,7 +1069,6 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
 
     .danger,
-    .remove-icon,
     .delete-inline {
       color: var(--meal-card-warning);
       border-color: color-mix(in srgb, var(--meal-card-warning) 32%, var(--meal-card-line));
@@ -1058,6 +1150,16 @@ export class FamilyMealiePlannerCard extends LitElement {
       padding: 6px 0;
     }
 
+    .empty-day {
+      min-height: 150px;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      color: var(--meal-card-muted);
+      font-weight: 800;
+      text-align: center;
+    }
+
     .meal-section {
       display: grid;
       gap: 8px;
@@ -1083,82 +1185,38 @@ export class FamilyMealiePlannerCard extends LitElement {
       text-transform: uppercase;
     }
 
-    .add-inline,
-    .remove-icon {
-      width: 36px;
-      min-width: 36px;
-      min-height: 36px;
-      padding: 0;
-      display: grid;
-      place-items: center;
-      font-size: 22px;
-      font-weight: 900;
-    }
-
-    .add-inline {
-      border-color: color-mix(in srgb, var(--meal-card-accent) 35%, var(--meal-card-line));
-      color: var(--meal-card-accent);
-      background: color-mix(in srgb, var(--meal-card-accent) 8%, var(--meal-card-surface));
-    }
-
     .meal-list {
       display: grid;
       gap: 8px;
     }
 
-    .empty-line {
-      min-height: 42px;
-      padding: 0 12px;
-      border-style: dashed;
-      text-align: left;
-      color: var(--meal-card-muted);
-      background: color-mix(in srgb, var(--primary-background-color, #f6f6f6) 60%, var(--meal-card-surface));
-      font-weight: 750;
-    }
-
     .meal-pill {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: stretch;
-      overflow: hidden;
+      display: block;
+      width: 100%;
+      min-height: 64px;
+      padding: 12px;
       border: 1px solid var(--meal-card-line);
       border-radius: var(--meal-card-radius);
       background: var(--meal-card-surface);
-    }
-
-    .meal-open {
-      min-height: 58px;
-      border: 0;
-      border-radius: 0;
-      padding: 10px 12px;
       text-align: left;
-      background: transparent;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
     }
 
-    .meal-open strong,
-    .meal-open small {
+    .meal-pill strong,
+    .meal-pill small {
       display: block;
       overflow-wrap: anywhere;
     }
 
-    .meal-open strong {
+    .meal-pill strong {
       font-size: 17px;
       line-height: 1.2;
     }
 
-    .meal-open small {
+    .meal-pill small {
       margin-top: 4px;
       color: var(--meal-card-muted);
       font-size: 13px;
-    }
-
-    .remove-icon {
-      width: 44px;
-      min-width: 44px;
-      min-height: 100%;
-      border-width: 0 0 0 1px;
-      border-radius: 0;
-      font-size: 20px;
     }
 
     .recipe-toolbar {
@@ -1346,13 +1404,20 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
 
     input,
-    select {
+    select,
+    textarea {
       min-height: var(--meal-card-touch);
       border: 1px solid var(--meal-card-line);
       border-radius: var(--meal-card-radius);
       padding: 0 14px;
       background: var(--meal-card-surface);
       color: var(--primary-text-color);
+    }
+
+    textarea {
+      min-height: 130px;
+      padding-top: 12px;
+      resize: vertical;
     }
 
     .recipe-results {
@@ -1405,6 +1470,11 @@ export class FamilyMealiePlannerCard extends LitElement {
     .note-area {
       display: grid;
       gap: 10px;
+    }
+
+    .note-editor {
+      display: grid;
+      gap: 14px;
     }
 
     .chips {
@@ -1487,6 +1557,11 @@ export class FamilyMealiePlannerCard extends LitElement {
 
       .topbar {
         align-items: flex-start;
+      }
+
+      .top-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
 
       .tabs {
@@ -1641,6 +1716,16 @@ function shoppingItemUpdatePayload(item: ShoppingListItem, checked: boolean): Re
   });
 }
 
+function mealPlanNotePayload(meal: MealPlanItem, title: string, text: string): Record<string, unknown> {
+  return compactObject({
+    date: meal.date,
+    entryType: meal.entryType,
+    title,
+    text,
+    recipeId: meal.raw.recipeId ?? meal.raw.recipe_id ?? null,
+  });
+}
+
 function normalizeIngredients(value: unknown): string[] {
   return unwrapArray(value)
     .map((item) => {
@@ -1714,7 +1799,7 @@ function stripHtml(value: string): string {
 }
 
 function inputValue(event: Event): string {
-  return (event.currentTarget as HTMLInputElement | HTMLSelectElement).value;
+  return (event.currentTarget as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
 }
 
 function startOfDay(date: Date): Date {
