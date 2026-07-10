@@ -2033,12 +2033,16 @@ function at(t, e) {
   });
 }
 function ot(t, e, i) {
+  const s = t.raw;
   return _e({
+    id: t.id ?? s.id,
+    groupId: s.groupId ?? s.group_id,
+    userId: s.userId ?? s.user_id,
     date: t.date,
     entryType: t.entryType,
     title: e,
     text: i,
-    recipeId: t.raw.recipeId ?? t.raw.recipe_id ?? null
+    recipeId: s.recipeId ?? s.recipe_id ?? null
   });
 }
 function nt(t) {

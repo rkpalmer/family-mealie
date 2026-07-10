@@ -1717,12 +1717,16 @@ function shoppingItemUpdatePayload(item: ShoppingListItem, checked: boolean): Re
 }
 
 function mealPlanNotePayload(meal: MealPlanItem, title: string, text: string): Record<string, unknown> {
+  const raw = meal.raw;
   return compactObject({
+    id: meal.id ?? raw.id,
+    groupId: raw.groupId ?? raw.group_id,
+    userId: raw.userId ?? raw.user_id,
     date: meal.date,
     entryType: meal.entryType,
     title,
     text,
-    recipeId: meal.raw.recipeId ?? meal.raw.recipe_id ?? null,
+    recipeId: raw.recipeId ?? raw.recipe_id ?? null,
   });
 }
 
