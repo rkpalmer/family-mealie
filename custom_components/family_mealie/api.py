@@ -92,7 +92,24 @@ class FamilyMealieClient:
                 "recipeInstructions": payload.get("recipeInstructions") or payload.get("recipe_instructions"),
             }
         )
-        return await self.put_with_alias_fallback(f"/api/recipes/{quote(slug, safe='')}", update_payload)
+        try:
+            return await self.put_with_alias_fallback(f"/api/recipes/{quote(slug, safe='')}", update_payload)
+        except FamilyMealieApiError:
+            fallback = recipe | compact(
+                {
+                    "name": name,
+                    "description": payload.get("description"),
+                    "orgURL": payload.get("orgURL") or payload.get("org_url"),
+                    "recipeServings": payload.get("recipeServings") or payload.get("recipe_servings"),
+                    "recipeYield": payload.get("recipeYield") or payload.get("recipe_yield"),
+                    "prepTime": payload.get("prepTime") or payload.get("prep_time"),
+                    "cookTime": payload.get("cookTime") or payload.get("cook_time"),
+                    "totalTime": payload.get("totalTime") or payload.get("total_time"),
+                    "recipeIngredient": plain_ingredient_lines(ingredients) if isinstance(ingredients, list) else ingredients,
+                    "recipeInstructions": payload.get("recipeInstructions") or payload.get("recipe_instructions"),
+                }
+            )
+            return await self.put_with_alias_fallback(f"/api/recipes/{quote(slug, safe='')}", fallback)
 
     async def import_recipe_url(
         self,
@@ -125,7 +142,7 @@ class FamilyMealieClient:
         try:
             parsed = await self.post("/api/parser/ingredients", json={"parser": "nlp", "ingredients": lines})
             if isinstance(parsed, list):
-                return [item.get("ingredient", item) if isinstance(item, dict) else item for item in parsed]
+                return [safe_parsed_ingredient(item, line) for item, line in zip(parsed, lines, strict=False)]
         except FamilyMealieApiError:
             pass
 
@@ -143,10 +160,13 @@ class FamilyMealieClient:
         if not parsed:
             return recipe
 
-        return await self.put_with_alias_fallback(
-            f"/api/recipes/{quote(slug, safe='')}",
-            recipe | {"recipeIngredient": parsed},
-        )
+        try:
+            return await self.put_with_alias_fallback(
+                f"/api/recipes/{quote(slug, safe='')}",
+                recipe | {"recipeIngredient": parsed},
+            )
+        except FamilyMealieApiError:
+            return recipe
 
     async def recipe_image(self, recipe_id: str) -> MealieImage:
         """Return a recipe image by recipe id."""
@@ -380,6 +400,58 @@ def ingredient_line(value: Any) -> str:
     if isinstance(value, dict):
         return str(value.get("originalText") or value.get("original_text") or value.get("display") or value.get("note") or "").strip()
     return ""
+
+
+def plain_ingredient_lines(ingredients: list[Any]) -> list[dict[str, str]]:
+    """Return plain display ingredient objects from mixed ingredient values."""
+
+    return [{"note": line, "display": line, "originalText": line} for line in (ingredient_line(item) for item in ingredients) if line]
+
+
+def safe_parsed_ingredient(value: Any, fallback_line: str) -> dict[str, Any]:
+    """Return a parsed ingredient only when it does not need Mealie's review flow."""
+
+    if not isinstance(value, dict):
+        return plain_ingredient(fallback_line)
+
+    ingredient = value.get("ingredient")
+    if not isinstance(ingredient, dict):
+        return plain_ingredient(fallback_line)
+
+    confidence = value.get("confidence")
+    average = confidence.get("average") if isinstance(confidence, dict) else None
+    if isinstance(average, (int, float)) and average < 0.85:
+        return plain_ingredient(fallback_line)
+
+    for key in ("food", "unit"):
+        item = ingredient.get(key)
+        if isinstance(item, dict) and item.get("id") in (None, ""):
+            return plain_ingredient(fallback_line)
+
+    cleaned = strip_empty_ids(ingredient)
+    cleaned.setdefault("originalText", fallback_line)
+    cleaned.setdefault("display", ingredient.get("display") or fallback_line)
+    return cleaned
+
+
+def plain_ingredient(line: str) -> dict[str, str]:
+    """Return a plain ingredient object."""
+
+    return {"note": line, "display": line, "originalText": line}
+
+
+def strip_empty_ids(value: Any) -> Any:
+    """Remove empty id values from nested parser objects."""
+
+    if isinstance(value, list):
+        return [strip_empty_ids(item) for item in value]
+    if isinstance(value, dict):
+        return {
+            key: strip_empty_ids(item)
+            for key, item in value.items()
+            if not (key == "id" and item in (None, ""))
+        }
+    return value
 
 
 def looks_like_validation_error(error: FamilyMealieApiError) -> bool:
