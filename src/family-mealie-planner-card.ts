@@ -117,7 +117,6 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private mealEditDate = "";
   @state() private mealEditEntryType = "";
   @state() private mealSaving = false;
-  @state() private draggingMealId?: string;
   @state() private selectedRecipeForDialog?: RecipeSummary;
   @state() private recipeDetail?: RecipeDetail;
   @state() private recipeLoading = false;
@@ -146,6 +145,9 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private newListName = "";
 
   private refreshTimer?: number;
+  private draggingMealId?: string;
+  private pointerDrag?: { mealId: string; pointerId: number; startX: number; startY: number; active: boolean; source: HTMLElement };
+  private suppressMealClickUntil = 0;
 
   public setConfig(config: CardConfig): void {
     if (!config || config.type !== "custom:family-mealie-planner-card") {
@@ -255,12 +257,17 @@ export class FamilyMealiePlannerCard extends LitElement {
     const hasMeals = this.hasMealsForDay(date);
 
     return html`
-      <article class="day" @dragover=${this.onPlannerDragOver} @drop=${(event: DragEvent) => this.dropMeal(event, date)}>
+      <article
+        class="day"
+        data-drop-date=${date}
+        @dragover=${this.onPlannerDragOver}
+        @drop=${(event: DragEvent) => this.dropMeal(event, date)}
+      >
         <div class="day-head">
           <span>${this.formatWeekday(day)}</span>
           <strong>${this.formatMonthDay(day)}</strong>
         </div>
-        ${this.draggingMealId ? this.renderDropTargets(date) : nothing}
+        ${this.renderDropTargets(date)}
         <div class="meal-sections">
           ${hasMeals
             ? this.entryTypes().map((entryType) => this.renderMealSection(day, entryType))
@@ -276,7 +283,13 @@ export class FamilyMealiePlannerCard extends LitElement {
     if (!meals.length) return nothing;
 
     return html`
-      <section class="meal-section" @dragover=${this.onPlannerDragOver} @drop=${(event: DragEvent) => this.dropMeal(event, date, entryType)}>
+      <section
+        class="meal-section"
+        data-drop-date=${date}
+        data-drop-entry-type=${entryType}
+        @dragover=${this.onPlannerDragOver}
+        @drop=${(event: DragEvent) => this.dropMeal(event, date, entryType)}
+      >
         <header>
           <span>${titleCase(entryType)}</span>
         </header>
@@ -303,11 +316,15 @@ export class FamilyMealiePlannerCard extends LitElement {
   private renderMealCard(meal: MealPlanItem) {
     return html`
       <button
-        class=${this.draggingMealId === String(meal.id) ? "meal-pill dragging" : "meal-pill"}
+        class="meal-pill"
         draggable=${meal.id ? "true" : "false"}
         @dragstart=${(event: DragEvent) => this.startMealDrag(event, meal)}
         @dragend=${this.endMealDrag}
-        @click=${() => this.openMealDialog(meal)}
+        @pointerdown=${(event: PointerEvent) => this.startMealPointer(event, meal)}
+        @pointermove=${this.moveMealPointer}
+        @pointerup=${this.endMealPointer}
+        @pointercancel=${this.cancelMealPointer}
+        @click=${(event: MouseEvent) => this.onMealCardClick(event, meal)}
       >
         <strong>${meal.title}</strong>
         ${meal.text && meal.text !== meal.title ? html`<small>${meal.text}</small>` : nothing}
@@ -322,6 +339,8 @@ export class FamilyMealiePlannerCard extends LitElement {
           (entryType) => html`
             <button
               type="button"
+              data-drop-date=${date}
+              data-drop-entry-type=${entryType}
               @dragover=${this.onPlannerDragOver}
               @drop=${(event: DragEvent) => this.dropMeal(event, date, entryType)}
             >
@@ -601,7 +620,7 @@ export class FamilyMealiePlannerCard extends LitElement {
             <label>
               Meal
               <select .value=${this.selectedSlot.entryType} @change=${this.onEntryTypeInput}>
-                ${this.entryTypes().map((type) => html`<option .value=${type}>${titleCase(type)}</option>`)}
+                ${this.entryTypes().map((type) => html`<option value=${type}>${titleCase(type)}</option>`)}
               </select>
             </label>
           </div>
@@ -784,7 +803,7 @@ export class FamilyMealiePlannerCard extends LitElement {
         <label>
           Meal
           <select .value=${this.mealEditEntryType} @change=${this.onMealEditEntryTypeInput}>
-            ${this.entryTypes().map((type) => html`<option .value=${type}>${titleCase(type)}</option>`)}
+            ${this.entryTypes().map((type) => html`<option value=${type}>${titleCase(type)}</option>`)}
           </select>
         </label>
       </section>
@@ -831,7 +850,9 @@ export class FamilyMealiePlannerCard extends LitElement {
       end_date: end,
       limit: -1,
     });
-    this.mealPlan = unwrapArray(response).map((item) => normalizeMealPlanItem(item, this.imageToken)).filter(Boolean) as MealPlanItem[];
+    this.mealPlan = unwrapArray(response)
+      .map((item) => normalizeMealPlanItem(item, this.imageToken, this.entryTypes()))
+      .filter(Boolean) as MealPlanItem[];
   }
 
   private async loadShoppingLists(): Promise<void> {
@@ -930,7 +951,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     const note = this.noteText.trim();
     const payload: Record<string, unknown> = {
       date: this.selectedSlot.date,
-      entryType: this.selectedSlot.entryType,
+      entryType: this.canonicalEntryType(this.selectedSlot.entryType),
       title: "",
       text: "",
     };
@@ -961,7 +982,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     const text = this.noteEditText.trim() || title;
     const payload = mealPlanUpdatePayload(meal, {
       date: this.mealEditDate || meal.date,
-      entryType: this.mealEditEntryType || meal.entryType,
+      entryType: this.canonicalEntryType(this.mealEditEntryType || meal.entryType),
       title,
       text,
     });
@@ -1225,7 +1246,7 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private onEntryTypeInput(event: InputEvent): void {
     if (!this.selectedSlot) return;
-    this.selectedSlot = { ...this.selectedSlot, entryType: inputValue(event) };
+    this.selectedSlot = { ...this.selectedSlot, entryType: this.canonicalEntryType(inputValue(event)) };
   }
 
   private onMealEditDateInput = (event: InputEvent): void => {
@@ -1233,25 +1254,96 @@ export class FamilyMealiePlannerCard extends LitElement {
   };
 
   private onMealEditEntryTypeInput = (event: InputEvent): void => {
-    this.mealEditEntryType = inputValue(event);
+    this.mealEditEntryType = this.canonicalEntryType(inputValue(event));
   };
 
   private mealPlacementChanged(): boolean {
     const meal = this.selectedMeal;
     if (!meal) return false;
-    return this.mealEditDate !== meal.date || this.mealEditEntryType !== meal.entryType;
+    return this.mealEditDate !== meal.date || this.canonicalEntryType(this.mealEditEntryType) !== this.canonicalEntryType(meal.entryType);
   }
 
   private startMealDrag(event: DragEvent, meal: MealPlanItem): void {
     if (!meal.id) return;
     this.draggingMealId = String(meal.id);
+    this.classList.add("dragging-meal");
+    (event.currentTarget as HTMLElement | null)?.classList.add("dragging");
     event.dataTransfer?.setData("text/plain", String(meal.id));
     if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
   }
 
   private endMealDrag = (): void => {
+    this.classList.remove("dragging-meal");
+    this.renderRoot.querySelectorAll(".meal-pill.dragging").forEach((element) => element.classList.remove("dragging"));
     this.draggingMealId = undefined;
   };
+
+  private startMealPointer(event: PointerEvent, meal: MealPlanItem): void {
+    if (!meal.id || event.button !== 0 || event.pointerType === "mouse") return;
+    this.pointerDrag = {
+      mealId: String(meal.id),
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      active: false,
+      source: event.currentTarget as HTMLElement,
+    };
+  }
+
+  private moveMealPointer = (event: PointerEvent): void => {
+    const drag = this.pointerDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
+    if (!drag.active && distance < 12) return;
+
+    if (!drag.active) {
+      drag.active = true;
+      this.draggingMealId = drag.mealId;
+      this.classList.add("dragging-meal");
+      drag.source.classList.add("dragging");
+      drag.source.setPointerCapture?.(event.pointerId);
+    }
+
+    event.preventDefault();
+  };
+
+  private endMealPointer = (event: PointerEvent): void => {
+    const drag = this.pointerDrag;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    drag.source.releasePointerCapture?.(event.pointerId);
+    this.pointerDrag = undefined;
+
+    if (!drag.active) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.suppressMealClickUntil = Date.now() + 350;
+
+    const target = this.dropTargetFromPoint(event.clientX, event.clientY);
+    this.clearDraggingState();
+    if (!target) return;
+
+    const meal = this.mealPlan.find((item) => String(item.id) === drag.mealId);
+    if (!meal) return;
+    void this.moveMeal(meal, target.date, target.entryType ?? meal.entryType);
+  };
+
+  private cancelMealPointer = (): void => {
+    this.pointerDrag = undefined;
+    this.clearDraggingState();
+  };
+
+  private onMealCardClick(event: MouseEvent, meal: MealPlanItem): void {
+    if (Date.now() < this.suppressMealClickUntil) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    void this.openMealDialog(meal);
+  }
 
   private onPlannerDragOver = (event: DragEvent): void => {
     if (!this.draggingMealId) return;
@@ -1266,21 +1358,40 @@ export class FamilyMealiePlannerCard extends LitElement {
 
     const mealId = event.dataTransfer?.getData("text/plain") || this.draggingMealId;
     const meal = this.mealPlan.find((item) => String(item.id) === mealId);
-    this.draggingMealId = undefined;
+    this.clearDraggingState();
     if (!meal) return;
 
     await this.moveMeal(meal, date, entryType ?? meal.entryType);
   }
 
-  private async moveMeal(meal: MealPlanItem, date: string, entryType: string, closeDialog = false): Promise<void> {
-    if (!meal.id || !date || !entryType) return;
-    if (meal.date === date && meal.entryType === entryType) return;
+  private dropTargetFromPoint(x: number, y: number): { date: string; entryType?: string } | undefined {
+    const root = this.renderRoot as ShadowRoot;
+    const element = root.elementFromPoint?.(x, y) as HTMLElement | null;
+    const target = element?.closest<HTMLElement>("[data-drop-date]");
+    const date = target?.dataset.dropDate;
+    if (!date) return undefined;
+    return {
+      date,
+      entryType: target.dataset.dropEntryType,
+    };
+  }
 
-    const payload = mealPlanUpdatePayload(meal, { date, entryType });
+  private clearDraggingState(): void {
+    this.classList.remove("dragging-meal");
+    this.renderRoot.querySelectorAll(".meal-pill.dragging").forEach((element) => element.classList.remove("dragging"));
+    this.draggingMealId = undefined;
+  }
+
+  private async moveMeal(meal: MealPlanItem, date: string, entryType: string, closeDialog = false): Promise<void> {
+    const nextEntryType = this.canonicalEntryType(entryType);
+    if (!meal.id || !date || !nextEntryType) return;
+    if (meal.date === date && this.canonicalEntryType(meal.entryType) === nextEntryType) return;
+
+    const payload = mealPlanUpdatePayload(meal, { date, entryType: nextEntryType });
     this.mealSaving = true;
     try {
       await this.callFamilyMealie("family_mealie/mealplans/update", { meal_id: meal.id, payload });
-      this.selectedMeal = this.selectedMeal?.id === meal.id ? { ...meal, date, entryType, raw: { ...meal.raw, ...payload } } : this.selectedMeal;
+      this.selectedMeal = this.selectedMeal?.id === meal.id ? { ...meal, date, entryType: nextEntryType, raw: { ...meal.raw, ...payload } } : this.selectedMeal;
       await this.loadMealPlan();
       if (closeDialog) this.closeRecipeDialog();
     } catch (error) {
@@ -1307,7 +1418,8 @@ export class FamilyMealiePlannerCard extends LitElement {
   }
 
   private mealsFor(date: string, entryType: string): MealPlanItem[] {
-    return this.mealPlan.filter((meal) => meal.date === date && meal.entryType.toLocaleLowerCase() === entryType.toLocaleLowerCase());
+    const key = entryTypeKey(entryType);
+    return this.mealPlan.filter((meal) => meal.date === date && entryTypeKey(meal.entryType) === key);
   }
 
   private hasMealsForDay(date: string): boolean {
@@ -1326,7 +1438,12 @@ export class FamilyMealiePlannerCard extends LitElement {
   }
 
   private entryTypes(): string[] {
-    return this.config.entry_types?.length ? this.config.entry_types : DEFAULT_ENTRY_TYPES;
+    const values = this.config.entry_types?.map((type) => type.trim()).filter(Boolean) ?? [];
+    return values.length ? values : DEFAULT_ENTRY_TYPES;
+  }
+
+  private canonicalEntryType(value: string): string {
+    return canonicalEntryType(value, this.entryTypes());
   }
 
   private weekStartIndex(): number {
@@ -1580,10 +1697,14 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
 
     .drop-targets {
-      display: grid;
+      display: none;
       grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
       gap: 8px;
       padding: 10px 12px 4px;
+    }
+
+    :host(.dragging-meal) .drop-targets {
+      display: grid;
     }
 
     .drop-targets button {
@@ -1652,6 +1773,8 @@ export class FamilyMealiePlannerCard extends LitElement {
       background: var(--meal-card-surface);
       text-align: left;
       box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+      touch-action: none;
+      user-select: none;
     }
 
     .meal-pill strong,
@@ -2194,13 +2317,16 @@ function normalizeRecipeDetail(value: unknown, imageToken?: string): RecipeDetai
   };
 }
 
-function normalizeMealPlanItem(value: unknown, imageToken?: string): MealPlanItem | undefined {
+function normalizeMealPlanItem(value: unknown, imageToken?: string, entryTypes: string[] = DEFAULT_ENTRY_TYPES): MealPlanItem | undefined {
   const object = unwrapObject(value);
   if (!object) return undefined;
 
   const recipe = unwrapObject(object.recipe);
   const date = stringValue(object.date) ?? stringValue(object.mealplan_date) ?? stringValue(object.mealplanDate);
-  const entryType = stringValue(object.entryType) ?? stringValue(object.entry_type) ?? stringValue(object.mealType) ?? stringValue(object.meal_type);
+  const entryType = canonicalEntryType(
+    stringValue(object.entryType) ?? stringValue(object.entry_type) ?? stringValue(object.mealType) ?? stringValue(object.meal_type) ?? "",
+    entryTypes,
+  );
   const text = stringValue(object.text) ?? stringValue(object.note);
   const title = stringValue(object.title) || stringValue(recipe?.name) || text || "Meal";
   const slug = stringValue(object.recipeSlug) ?? stringValue(object.recipe_slug) ?? stringValue(recipe?.slug);
@@ -2409,6 +2535,17 @@ function unwrapObject(value: unknown): Record<string, unknown> | undefined {
 
 function compactObject(value: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined && item !== ""));
+}
+
+function canonicalEntryType(value: string, entryTypes: string[]): string {
+  const fallback = value.trim();
+  const key = entryTypeKey(fallback);
+  const match = entryTypes.find((entryType) => entryTypeKey(entryType) === key);
+  return match ?? fallback.toLocaleLowerCase();
+}
+
+function entryTypeKey(value: string): string {
+  return value.trim().toLocaleLowerCase().replace(/[\s_-]+/g, "_");
 }
 
 function stringValue(value: unknown): string | undefined {
