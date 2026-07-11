@@ -100,6 +100,7 @@ entry_types:
 result_limit: 300
 refresh_minutes: 15
 ingredient_parser: auto
+week_start: sunday
 ```
 
 If you configure more than one Family Mealie instance later, add the config entry id:
@@ -109,6 +110,8 @@ entry_id: your_family_mealie_config_entry_id
 ```
 
 `ingredient_parser` controls how imported/manual recipe ingredients are parsed. Use `auto` to try Mealie's OpenAI parser first, then fall back to `nlp`, `brute`, and finally plain readable ingredient lines. You can also set it directly to `openai`, `nlp`, or `brute`.
+
+`week_start` controls the planner range for the **This week**, **Previous week**, and **Next week** buttons. Use `sunday`, `monday`, or any other weekday name.
 
 ## Current Features
 
@@ -123,6 +126,8 @@ entry_id: your_family_mealie_config_entry_id
 - Create grocery lists.
 - Add, check, uncheck, and remove grocery items.
 - Add recipe ingredients to a grocery list.
+- Configurable planner week start.
+- Move planned meals by editing date/meal type or dragging them between planner days.
 
 ## Build
 

@@ -17,6 +17,7 @@ interface CardConfig {
   refresh_minutes?: number;
   entry_id?: string;
   ingredient_parser?: IngredientParser;
+  week_start?: WeekStart;
 }
 
 interface RecipeSummary {
@@ -84,11 +85,13 @@ interface ManualRecipeForm {
   ingredients: string;
   instructions: string;
   parseIngredients: boolean;
+  ingredientParser: IngredientParser;
 }
 
 type MainView = "planner" | "recipes" | "groceries";
 type RecipeCreateMode = "url" | "manual";
 type IngredientParser = "auto" | "openai" | "nlp" | "brute";
+type WeekStart = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | number;
 
 const DEFAULT_ENTRY_TYPES = ["breakfast", "lunch", "dinner"];
 const QUICK_NOTES = ["Leftovers:", "Eat Out:", "Freezer Meal:", "Kids:"];
@@ -111,6 +114,10 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private recipeDialogOpen = false;
   @state() private selectedSlot?: SlotContext;
   @state() private selectedMeal?: MealPlanItem;
+  @state() private mealEditDate = "";
+  @state() private mealEditEntryType = "";
+  @state() private mealSaving = false;
+  @state() private draggingMealId?: string;
   @state() private selectedRecipeForDialog?: RecipeSummary;
   @state() private recipeDetail?: RecipeDetail;
   @state() private recipeLoading = false;
@@ -118,7 +125,6 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private noteText = "";
   @state() private noteEditTitle = "";
   @state() private noteEditText = "";
-  @state() private noteSaving = false;
   @state() private selectedRecipe?: RecipeSummary;
   @state() private plannerOffsetDays = 0;
   @state() private recipeCreateOpen = false;
@@ -249,11 +255,12 @@ export class FamilyMealiePlannerCard extends LitElement {
     const hasMeals = this.hasMealsForDay(date);
 
     return html`
-      <article class="day">
+      <article class="day" @dragover=${this.onPlannerDragOver} @drop=${(event: DragEvent) => this.dropMeal(event, date)}>
         <div class="day-head">
           <span>${this.formatWeekday(day)}</span>
           <strong>${this.formatMonthDay(day)}</strong>
         </div>
+        ${this.draggingMealId ? this.renderDropTargets(date) : nothing}
         <div class="meal-sections">
           ${hasMeals
             ? this.entryTypes().map((entryType) => this.renderMealSection(day, entryType))
@@ -269,7 +276,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     if (!meals.length) return nothing;
 
     return html`
-      <section class="meal-section">
+      <section class="meal-section" @dragover=${this.onPlannerDragOver} @drop=${(event: DragEvent) => this.dropMeal(event, date, entryType)}>
         <header>
           <span>${titleCase(entryType)}</span>
         </header>
@@ -295,10 +302,34 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private renderMealCard(meal: MealPlanItem) {
     return html`
-      <button class="meal-pill" @click=${() => this.openMealDialog(meal)}>
+      <button
+        class=${this.draggingMealId === String(meal.id) ? "meal-pill dragging" : "meal-pill"}
+        draggable=${meal.id ? "true" : "false"}
+        @dragstart=${(event: DragEvent) => this.startMealDrag(event, meal)}
+        @dragend=${this.endMealDrag}
+        @click=${() => this.openMealDialog(meal)}
+      >
         <strong>${meal.title}</strong>
         ${meal.text && meal.text !== meal.title ? html`<small>${meal.text}</small>` : nothing}
       </button>
+    `;
+  }
+
+  private renderDropTargets(date: string) {
+    return html`
+      <div class="drop-targets">
+        ${this.entryTypes().map(
+          (entryType) => html`
+            <button
+              type="button"
+              @dragover=${this.onPlannerDragOver}
+              @drop=${(event: DragEvent) => this.dropMeal(event, date, entryType)}
+            >
+              ${titleCase(entryType)}
+            </button>
+          `,
+        )}
+      </div>
     `;
   }
 
@@ -645,8 +676,10 @@ export class FamilyMealiePlannerCard extends LitElement {
 
           ${this.recipeLoading
             ? html`<div class="loading">Loading recipe...</div>`
-            : isNoteMeal
-              ? this.renderNoteEditor()
+            : html`
+              ${this.selectedMeal ? this.renderMealPlacementEditor() : nothing}
+              ${isNoteMeal
+                ? this.renderNoteEditor()
             : html`
                 ${detail?.image || this.selectedMeal?.image
                   ? html`<img class="hero-image" src=${detail?.image ?? this.selectedMeal?.image ?? ""} alt="" />`
@@ -683,12 +716,20 @@ export class FamilyMealiePlannerCard extends LitElement {
                     `
                   : nothing}
               `}
+            `}
 
           <footer class="recipe-actions">
             ${isNoteMeal
               ? html`
-                  <button class="primary" @click=${this.saveNoteMeal} ?disabled=${this.noteSaving || !this.noteEditTitle.trim()}>
-                    ${this.noteSaving ? "Saving" : "Save note"}
+                  <button class="primary" @click=${this.saveNoteMeal} ?disabled=${this.mealSaving || !this.noteEditTitle.trim()}>
+                    ${this.mealSaving ? "Saving" : "Save note"}
+                  </button>
+                `
+              : nothing}
+            ${this.selectedMeal && !isNoteMeal
+              ? html`
+                  <button class="primary" @click=${this.saveMealPlacement} ?disabled=${this.mealSaving || !this.mealPlacementChanged()}>
+                    ${this.mealSaving ? "Saving" : "Save changes"}
                   </button>
                 `
               : nothing}
@@ -728,6 +769,23 @@ export class FamilyMealiePlannerCard extends LitElement {
             .value=${this.noteEditText}
             @input=${(event: InputEvent) => (this.noteEditText = inputValue(event))}
           ></textarea>
+        </label>
+      </section>
+    `;
+  }
+
+  private renderMealPlacementEditor() {
+    return html`
+      <section class="meal-placement-editor">
+        <label>
+          Date
+          <input type="date" .value=${this.mealEditDate} @input=${this.onMealEditDateInput} />
+        </label>
+        <label>
+          Meal
+          <select .value=${this.mealEditEntryType} @change=${this.onMealEditEntryTypeInput}>
+            ${this.entryTypes().map((type) => html`<option .value=${type}>${titleCase(type)}</option>`)}
+          </select>
         </label>
       </section>
     `;
@@ -901,19 +959,39 @@ export class FamilyMealiePlannerCard extends LitElement {
     const title = this.noteEditTitle.trim();
     if (!title) return;
     const text = this.noteEditText.trim() || title;
-    const payload = mealPlanNotePayload(meal, title, text);
+    const payload = mealPlanUpdatePayload(meal, {
+      date: this.mealEditDate || meal.date,
+      entryType: this.mealEditEntryType || meal.entryType,
+      title,
+      text,
+    });
 
-    this.noteSaving = true;
+    this.mealSaving = true;
     try {
       await this.callFamilyMealie("family_mealie/mealplans/update", { meal_id: meal.id, payload });
-      this.selectedMeal = { ...meal, title, text, raw: { ...meal.raw, title, text } };
+      this.selectedMeal = {
+        ...meal,
+        date: String(payload.date ?? meal.date),
+        entryType: String(payload.entryType ?? meal.entryType),
+        title,
+        text,
+        raw: { ...meal.raw, ...payload },
+      };
       await this.loadMealPlan();
       this.closeRecipeDialog();
     } catch (error) {
-      this.error = errorMessage(error, "Could not save meal note.");
+      this.error = errorMessage(error, "Could not save meal.");
     } finally {
-      this.noteSaving = false;
+      this.mealSaving = false;
     }
+  }
+
+  private async saveMealPlacement(event: Event): Promise<void> {
+    event.preventDefault();
+    const meal = this.selectedMeal;
+    if (!meal?.id) return;
+
+    await this.moveMeal(meal, this.mealEditDate || meal.date, this.mealEditEntryType || meal.entryType, true);
   }
 
   private async confirmDeleteMeal(meal: MealPlanItem): Promise<void> {
@@ -1085,6 +1163,8 @@ export class FamilyMealiePlannerCard extends LitElement {
     this.selectedMeal = meal;
     this.selectedRecipeForDialog = undefined;
     this.recipeDetail = undefined;
+    this.mealEditDate = meal.date;
+    this.mealEditEntryType = meal.entryType;
     this.noteEditTitle = meal.title;
     this.noteEditText = meal.text ?? meal.title;
     this.recipeDialogOpen = true;
@@ -1119,6 +1199,7 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private closeRecipeDialog = (): void => {
     this.recipeDialogOpen = false;
+    this.mealSaving = false;
   };
 
   private async selectShoppingList(listId: string): Promise<void> {
@@ -1145,6 +1226,68 @@ export class FamilyMealiePlannerCard extends LitElement {
   private onEntryTypeInput(event: InputEvent): void {
     if (!this.selectedSlot) return;
     this.selectedSlot = { ...this.selectedSlot, entryType: inputValue(event) };
+  }
+
+  private onMealEditDateInput = (event: InputEvent): void => {
+    this.mealEditDate = inputValue(event);
+  };
+
+  private onMealEditEntryTypeInput = (event: InputEvent): void => {
+    this.mealEditEntryType = inputValue(event);
+  };
+
+  private mealPlacementChanged(): boolean {
+    const meal = this.selectedMeal;
+    if (!meal) return false;
+    return this.mealEditDate !== meal.date || this.mealEditEntryType !== meal.entryType;
+  }
+
+  private startMealDrag(event: DragEvent, meal: MealPlanItem): void {
+    if (!meal.id) return;
+    this.draggingMealId = String(meal.id);
+    event.dataTransfer?.setData("text/plain", String(meal.id));
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+  }
+
+  private endMealDrag = (): void => {
+    this.draggingMealId = undefined;
+  };
+
+  private onPlannerDragOver = (event: DragEvent): void => {
+    if (!this.draggingMealId) return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+  };
+
+  private async dropMeal(event: DragEvent, date: string, entryType?: string): Promise<void> {
+    if (!this.draggingMealId) return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const mealId = event.dataTransfer?.getData("text/plain") || this.draggingMealId;
+    const meal = this.mealPlan.find((item) => String(item.id) === mealId);
+    this.draggingMealId = undefined;
+    if (!meal) return;
+
+    await this.moveMeal(meal, date, entryType ?? meal.entryType);
+  }
+
+  private async moveMeal(meal: MealPlanItem, date: string, entryType: string, closeDialog = false): Promise<void> {
+    if (!meal.id || !date || !entryType) return;
+    if (meal.date === date && meal.entryType === entryType) return;
+
+    const payload = mealPlanUpdatePayload(meal, { date, entryType });
+    this.mealSaving = true;
+    try {
+      await this.callFamilyMealie("family_mealie/mealplans/update", { meal_id: meal.id, payload });
+      this.selectedMeal = this.selectedMeal?.id === meal.id ? { ...meal, date, entryType, raw: { ...meal.raw, ...payload } } : this.selectedMeal;
+      await this.loadMealPlan();
+      if (closeDialog) this.closeRecipeDialog();
+    } catch (error) {
+      this.error = errorMessage(error, "Could not move meal.");
+    } finally {
+      this.mealSaving = false;
+    }
   }
 
   private onGroceryKeyDown = (event: KeyboardEvent): void => {
@@ -1174,7 +1317,7 @@ export class FamilyMealiePlannerCard extends LitElement {
   private daysToShow(): Date[] {
     const count = Math.max(1, Math.min(14, this.config.days ?? 7));
     const today = startOfDay(new Date());
-    const start = addDays(today, this.plannerOffsetDays);
+    const start = addDays(startOfWeek(today, this.weekStartIndex()), this.plannerOffsetDays);
     return Array.from({ length: count }, (_, index) => addDays(start, index));
   }
 
@@ -1184,6 +1327,10 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private entryTypes(): string[] {
     return this.config.entry_types?.length ? this.config.entry_types : DEFAULT_ENTRY_TYPES;
+  }
+
+  private weekStartIndex(): number {
+    return weekStartIndex(this.config.week_start);
   }
 
   private dateRange(): [string, string] {
@@ -1432,6 +1579,22 @@ export class FamilyMealiePlannerCard extends LitElement {
       padding: 6px 0;
     }
 
+    .drop-targets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+      gap: 8px;
+      padding: 10px 12px 4px;
+    }
+
+    .drop-targets button {
+      min-height: 40px;
+      border-style: dashed;
+      color: var(--meal-card-accent);
+      background: color-mix(in srgb, var(--meal-card-accent) 8%, var(--meal-card-surface));
+      font-size: 13px;
+      font-weight: 800;
+    }
+
     .planner-nav {
       display: flex;
       flex-wrap: wrap;
@@ -1506,6 +1669,11 @@ export class FamilyMealiePlannerCard extends LitElement {
       margin-top: 4px;
       color: var(--meal-card-muted);
       font-size: 13px;
+    }
+
+    .meal-pill.dragging {
+      opacity: 0.45;
+      outline: 2px solid color-mix(in srgb, var(--meal-card-accent) 45%, transparent);
     }
 
     .recipe-create-panel,
@@ -1867,6 +2035,16 @@ export class FamilyMealiePlannerCard extends LitElement {
       gap: 14px;
     }
 
+    .meal-placement-editor {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      padding: 12px;
+      border: 1px solid var(--meal-card-line);
+      border-radius: var(--meal-card-radius);
+      background: color-mix(in srgb, var(--meal-card-surface) 94%, var(--primary-background-color, #f6f6f6));
+    }
+
     .chips {
       display: flex;
       flex-wrap: wrap;
@@ -2113,17 +2291,21 @@ function shoppingItemUpdatePayload(item: ShoppingListItem, checked: boolean): Re
   });
 }
 
-function mealPlanNotePayload(meal: MealPlanItem, title: string, text: string): Record<string, unknown> {
+function mealPlanUpdatePayload(
+  meal: MealPlanItem,
+  changes: Partial<Pick<MealPlanItem, "date" | "entryType" | "title" | "text">>,
+): Record<string, unknown> {
   const raw = meal.raw;
+  const recipeId = meal.recipeId ?? raw.recipeId ?? raw.recipe_id ?? unwrapObject(raw.recipe)?.id;
   return compactObject({
     id: meal.id ?? raw.id,
     groupId: raw.groupId ?? raw.group_id,
     userId: raw.userId ?? raw.user_id,
-    date: meal.date,
-    entryType: meal.entryType,
-    title,
-    text,
-    recipeId: raw.recipeId ?? raw.recipe_id ?? null,
+    date: changes.date ?? meal.date,
+    entryType: changes.entryType ?? meal.entryType,
+    title: changes.title ?? meal.title,
+    text: changes.text ?? meal.text ?? meal.title,
+    recipeId: recipeId ?? null,
   });
 }
 
@@ -2158,6 +2340,7 @@ function manualRecipePayload(form: ManualRecipeForm): Record<string, unknown> & 
           }))
         : undefined,
       parseIngredients: form.parseIngredients,
+      ingredientParser: form.ingredientParser,
     }),
   };
 }
@@ -2266,6 +2449,12 @@ function addDays(date: Date, days: number): Date {
   return next;
 }
 
+function startOfWeek(date: Date, weekStart: number): Date {
+  const start = startOfDay(date);
+  const diff = (start.getDay() - weekStart + 7) % 7;
+  return addDays(start, -diff);
+}
+
 function toDateString(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -2276,6 +2465,17 @@ function toDateString(date: Date): string {
 function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
+}
+
+function weekStartIndex(value: WeekStart | undefined): number {
+  if (typeof value === "number" && Number.isInteger(value)) return ((value % 7) + 7) % 7;
+  const normalized = String(value ?? "sunday").trim().toLocaleLowerCase();
+  const names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const shortNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const index = names.indexOf(normalized);
+  if (index >= 0) return index;
+  const shortIndex = shortNames.indexOf(normalized);
+  return shortIndex >= 0 ? shortIndex : 0;
 }
 
 function titleCase(value: string): string {
