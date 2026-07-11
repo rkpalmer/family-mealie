@@ -127,7 +127,7 @@ entry_id: your_family_mealie_config_entry_id
 - Add, check, uncheck, and remove grocery items.
 - Add recipe ingredients to a grocery list.
 - Configurable planner week start.
-- Move planned meals by editing date/meal type or dragging them between planner days.
+- Move planned meals by editing date/meal type or press-and-hold dragging them between planner days.
 
 ## Build
 

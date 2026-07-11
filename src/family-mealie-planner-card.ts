@@ -146,7 +146,15 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private refreshTimer?: number;
   private draggingMealId?: string;
-  private pointerDrag?: { mealId: string; pointerId: number; startX: number; startY: number; active: boolean; source: HTMLElement };
+  private pointerDrag?: {
+    mealId: string;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    active: boolean;
+    source: HTMLElement;
+    holdTimer?: number;
+  };
   private suppressMealClickUntil = 0;
 
   public setConfig(config: CardConfig): void {
@@ -184,8 +192,15 @@ export class FamilyMealiePlannerCard extends LitElement {
       void this.refreshAll();
     }
 
-    if (changed.has("addDialogOpen") || changed.has("recipeDialogOpen")) {
+    if (
+      changed.has("addDialogOpen") ||
+      changed.has("recipeDialogOpen") ||
+      changed.has("mealEditEntryType") ||
+      changed.has("selectedMeal") ||
+      changed.has("selectedSlot")
+    ) {
       this.syncNativeDialogs();
+      this.syncNativeSelects();
     }
   }
 
@@ -317,9 +332,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     return html`
       <button
         class="meal-pill"
-        draggable=${meal.id ? "true" : "false"}
-        @dragstart=${(event: DragEvent) => this.startMealDrag(event, meal)}
-        @dragend=${this.endMealDrag}
+        draggable="false"
         @pointerdown=${(event: PointerEvent) => this.startMealPointer(event, meal)}
         @pointermove=${this.moveMealPointer}
         @pointerup=${this.endMealPointer}
@@ -619,8 +632,8 @@ export class FamilyMealiePlannerCard extends LitElement {
             </label>
             <label>
               Meal
-              <select .value=${this.selectedSlot.entryType} @change=${this.onEntryTypeInput}>
-                ${this.entryTypes().map((type) => html`<option value=${type}>${titleCase(type)}</option>`)}
+              <select class="meal-type-select" .value=${this.selectedSlot.entryType} @change=${this.onEntryTypeInput}>
+                ${this.renderEntryTypeOptions(this.selectedSlot.entryType)}
               </select>
             </label>
           </div>
@@ -802,12 +815,19 @@ export class FamilyMealiePlannerCard extends LitElement {
         </label>
         <label>
           Meal
-          <select .value=${this.mealEditEntryType} @change=${this.onMealEditEntryTypeInput}>
-            ${this.entryTypes().map((type) => html`<option value=${type}>${titleCase(type)}</option>`)}
+          <select class="meal-type-select" .value=${this.mealEditEntryType} @change=${this.onMealEditEntryTypeInput}>
+            ${this.renderEntryTypeOptions(this.mealEditEntryType)}
           </select>
         </label>
       </section>
     `;
+  }
+
+  private renderEntryTypeOptions(selected: string) {
+    const selectedKey = entryTypeKey(selected);
+    return this.entryTypes().map(
+      (type) => html`<option value=${type} ?selected=${entryTypeKey(type) === selectedKey}>${titleCase(type)}</option>`,
+    );
   }
 
   private stat(label: string, value?: string) {
@@ -1263,31 +1283,23 @@ export class FamilyMealiePlannerCard extends LitElement {
     return this.mealEditDate !== meal.date || this.canonicalEntryType(this.mealEditEntryType) !== this.canonicalEntryType(meal.entryType);
   }
 
-  private startMealDrag(event: DragEvent, meal: MealPlanItem): void {
-    if (!meal.id) return;
-    this.draggingMealId = String(meal.id);
-    this.classList.add("dragging-meal");
-    (event.currentTarget as HTMLElement | null)?.classList.add("dragging");
-    event.dataTransfer?.setData("text/plain", String(meal.id));
-    if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
-  }
-
-  private endMealDrag = (): void => {
-    this.classList.remove("dragging-meal");
-    this.renderRoot.querySelectorAll(".meal-pill.dragging").forEach((element) => element.classList.remove("dragging"));
-    this.draggingMealId = undefined;
-  };
-
   private startMealPointer(event: PointerEvent, meal: MealPlanItem): void {
-    if (!meal.id || event.button !== 0 || event.pointerType === "mouse") return;
-    this.pointerDrag = {
+    if (!meal.id || event.button !== 0) return;
+
+    const source = event.currentTarget as HTMLElement;
+    source.setPointerCapture?.(event.pointerId);
+
+    const drag = {
       mealId: String(meal.id),
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
       active: false,
-      source: event.currentTarget as HTMLElement,
+      source,
+      holdTimer: undefined as number | undefined,
     };
+    drag.holdTimer = window.setTimeout(() => this.activateMealPointerDrag(drag.pointerId), 450);
+    this.pointerDrag = drag;
   }
 
   private moveMealPointer = (event: PointerEvent): void => {
@@ -1295,14 +1307,9 @@ export class FamilyMealiePlannerCard extends LitElement {
     if (!drag || drag.pointerId !== event.pointerId) return;
 
     const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
-    if (!drag.active && distance < 12) return;
-
     if (!drag.active) {
-      drag.active = true;
-      this.draggingMealId = drag.mealId;
-      this.classList.add("dragging-meal");
-      drag.source.classList.add("dragging");
-      drag.source.setPointerCapture?.(event.pointerId);
+      if (distance > 10) this.cancelMealPointer();
+      return;
     }
 
     event.preventDefault();
@@ -1312,6 +1319,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     const drag = this.pointerDrag;
     if (!drag || drag.pointerId !== event.pointerId) return;
 
+    if (drag.holdTimer) window.clearTimeout(drag.holdTimer);
     drag.source.releasePointerCapture?.(event.pointerId);
     this.pointerDrag = undefined;
 
@@ -1331,9 +1339,22 @@ export class FamilyMealiePlannerCard extends LitElement {
   };
 
   private cancelMealPointer = (): void => {
+    if (this.pointerDrag?.holdTimer) window.clearTimeout(this.pointerDrag.holdTimer);
+    this.pointerDrag?.source.releasePointerCapture?.(this.pointerDrag.pointerId);
     this.pointerDrag = undefined;
     this.clearDraggingState();
   };
+
+  private activateMealPointerDrag(pointerId: number): void {
+    const drag = this.pointerDrag;
+    if (!drag || drag.pointerId !== pointerId) return;
+
+    drag.active = true;
+    drag.holdTimer = undefined;
+    this.draggingMealId = drag.mealId;
+    this.classList.add("dragging-meal");
+    drag.source.classList.add("dragging");
+  }
 
   private onMealCardClick(event: MouseEvent, meal: MealPlanItem): void {
     if (Date.now() < this.suppressMealClickUntil) {
@@ -1488,6 +1509,18 @@ export class FamilyMealiePlannerCard extends LitElement {
 
     if (this.addDialogOpen && addDialog && !addDialog.open) addDialog.showModal();
     if (this.recipeDialogOpen && recipeDialog && !recipeDialog.open) recipeDialog.showModal();
+  }
+
+  private syncNativeSelects(): void {
+    const addSelect = this.renderRoot.querySelector<HTMLSelectElement>("dialog.add select.meal-type-select");
+    if (addSelect && this.selectedSlot) {
+      addSelect.value = this.canonicalEntryType(this.selectedSlot.entryType);
+    }
+
+    const editSelect = this.renderRoot.querySelector<HTMLSelectElement>("dialog.recipe select.meal-type-select");
+    if (editSelect && this.selectedMeal) {
+      editSelect.value = this.canonicalEntryType(this.mealEditEntryType || this.selectedMeal.entryType);
+    }
   }
 
   static styles = css`
