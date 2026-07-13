@@ -88,6 +88,29 @@ interface ManualRecipeForm {
   ingredientParser: IngredientParser;
 }
 
+interface CardDraft {
+  view?: MainView;
+  plannerOffsetDays?: number;
+  search?: string;
+  recipeCreateOpen?: boolean;
+  recipeCreateMode?: RecipeCreateMode;
+  recipeUrl?: string;
+  manualRecipeName?: string;
+  manualRecipeSource?: string;
+  manualRecipeDescription?: string;
+  manualRecipeServings?: string;
+  manualRecipePrep?: string;
+  manualRecipeCook?: string;
+  manualRecipeTotal?: string;
+  manualRecipeIngredients?: string;
+  manualRecipeInstructions?: string;
+  manualParseIngredients?: boolean;
+  addDialogOpen?: boolean;
+  selectedSlot?: SlotContext;
+  noteTitle?: string;
+  noteText?: string;
+}
+
 type MainView = "planner" | "recipes" | "groceries";
 type RecipeCreateMode = "url" | "manual";
 type IngredientParser = "auto" | "openai" | "nlp" | "brute";
@@ -95,6 +118,29 @@ type WeekStart = "sunday" | "monday" | "tuesday" | "wednesday" | "thursday" | "f
 
 const DEFAULT_ENTRY_TYPES = ["breakfast", "lunch", "dinner"];
 const QUICK_NOTES = ["Leftovers:", "Eat Out:", "Freezer Meal:", "Kids:"];
+const DRAFT_STORAGE_PREFIX = "family-mealie-planner-card:draft:v2";
+const DRAFT_FIELDS = new Set([
+  "view",
+  "plannerOffsetDays",
+  "search",
+  "recipeCreateOpen",
+  "recipeCreateMode",
+  "recipeUrl",
+  "manualRecipeName",
+  "manualRecipeSource",
+  "manualRecipeDescription",
+  "manualRecipeServings",
+  "manualRecipePrep",
+  "manualRecipeCook",
+  "manualRecipeTotal",
+  "manualRecipeIngredients",
+  "manualRecipeInstructions",
+  "manualParseIngredients",
+  "addDialogOpen",
+  "selectedSlot",
+  "noteTitle",
+  "noteText",
+]);
 
 @customElement("family-mealie-planner-card")
 export class FamilyMealiePlannerCard extends LitElement {
@@ -121,6 +167,7 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private recipeDetail?: RecipeDetail;
   @state() private recipeLoading = false;
   @state() private search = "";
+  @state() private noteTitle = "";
   @state() private noteText = "";
   @state() private noteEditTitle = "";
   @state() private noteEditText = "";
@@ -145,6 +192,8 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private newListName = "";
 
   private refreshTimer?: number;
+  private draftSaveTimer?: number;
+  private draftRestored = false;
   private draggingMealId?: string;
   private pointerDrag?: {
     mealId: string;
@@ -175,11 +224,13 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   public connectedCallback(): void {
     super.connectedCallback();
+    this.restoreDraft();
     this.restartRefreshTimer();
   }
 
   public disconnectedCallback(): void {
     window.clearInterval(this.refreshTimer);
+    window.clearTimeout(this.draftSaveTimer);
     super.disconnectedCallback();
   }
 
@@ -201,6 +252,10 @@ export class FamilyMealiePlannerCard extends LitElement {
     ) {
       this.syncNativeDialogs();
       this.syncNativeSelects();
+    }
+
+    if ([...changed.keys()].some((key) => DRAFT_FIELDS.has(String(key)))) {
+      this.scheduleDraftSave();
     }
   }
 
@@ -376,7 +431,7 @@ export class FamilyMealiePlannerCard extends LitElement {
             type="search"
             placeholder="Pasta, tacos, soup..."
             .value=${this.search}
-            @input=${(event: InputEvent) => (this.search = inputValue(event))}
+            @input=${(event: InputEvent) => this.setSearch(inputValue(event))}
           />
         </label>
         <button class="secondary" @click=${this.toggleRecipeCreate}>
@@ -390,10 +445,10 @@ export class FamilyMealiePlannerCard extends LitElement {
               <header>
                 <h3>Add recipe</h3>
                 <div class="mode-tabs">
-                  <button class=${this.recipeCreateMode === "url" ? "active" : ""} @click=${() => (this.recipeCreateMode = "url")}>
+                  <button class=${this.recipeCreateMode === "url" ? "active" : ""} @click=${() => this.setRecipeCreateMode("url")}>
                     Import URL
                   </button>
-                  <button class=${this.recipeCreateMode === "manual" ? "active" : ""} @click=${() => (this.recipeCreateMode = "manual")}>
+                  <button class=${this.recipeCreateMode === "manual" ? "active" : ""} @click=${() => this.setRecipeCreateMode("manual")}>
                     Manual
                   </button>
                 </div>
@@ -667,19 +722,29 @@ export class FamilyMealiePlannerCard extends LitElement {
                 `,
               )}
             </div>
-            <input
-              type="text"
-              placeholder="Custom note"
-              .value=${this.noteText}
-              @input=${(event: InputEvent) => {
-                this.noteText = inputValue(event);
-                if (this.noteText) this.selectedRecipe = undefined;
-              }}
-            />
+            <div class="note-fields">
+              <label>
+                Title
+                <input
+                  type="text"
+                  placeholder="Leftovers: Chicken dish"
+                  .value=${this.noteTitle}
+                  @input=${(event: InputEvent) => this.updateNoteTitle(inputValue(event))}
+                />
+              </label>
+              <label>
+                Note
+                <textarea
+                  placeholder="Optional detail"
+                  .value=${this.noteText}
+                  @input=${(event: InputEvent) => this.updateNoteText(inputValue(event))}
+                ></textarea>
+              </label>
+            </div>
           </div>
 
           <footer>
-            <button type="button" class="primary" @click=${this.addMeal} ?disabled=${!this.selectedRecipe && !this.noteText.trim()}>
+            <button type="button" class="primary" @click=${this.addMeal} ?disabled=${!this.selectedRecipe && !this.noteTitle.trim()}>
               Add to plan
             </button>
           </footer>
@@ -922,6 +987,7 @@ export class FamilyMealiePlannerCard extends LitElement {
         ingredient_parser: this.config.ingredient_parser ?? "auto",
       });
       this.recipeUrl = "";
+      this.saveDraftNow();
       this.recipeMessage = "Recipe imported.";
       await this.loadRecipes();
     } catch (error) {
@@ -954,6 +1020,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     try {
       await this.callFamilyMealie("family_mealie/recipes/create", { payload });
       this.clearManualRecipeForm();
+      this.saveDraftNow();
       this.recipeMessage = "Recipe saved.";
       await this.loadRecipes();
     } catch (error) {
@@ -968,6 +1035,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     if (!this.selectedSlot) return;
 
     const recipe = this.selectedRecipe;
+    const noteTitle = this.noteTitle.trim();
     const note = this.noteText.trim();
     const payload: Record<string, unknown> = {
       date: this.selectedSlot.date,
@@ -978,14 +1046,19 @@ export class FamilyMealiePlannerCard extends LitElement {
 
     if (recipe?.id) {
       payload.recipeId = recipe.id;
-    } else if (note) {
-      payload.title = note;
+    } else if (noteTitle) {
+      payload.title = noteTitle;
       payload.text = note;
     }
 
     try {
       await this.callFamilyMealie("family_mealie/mealplans/create", { payload });
       this.closeAddDialog();
+      this.selectedSlot = undefined;
+      this.noteTitle = "";
+      this.noteText = "";
+      this.selectedRecipe = undefined;
+      this.saveDraftNow();
       await this.loadMealPlan();
     } catch (error) {
       this.error = errorMessage(error, "Could not add meal.");
@@ -999,7 +1072,7 @@ export class FamilyMealiePlannerCard extends LitElement {
 
     const title = this.noteEditTitle.trim();
     if (!title) return;
-    const text = this.noteEditText.trim() || title;
+    const text = this.noteEditText.trim();
     const payload = mealPlanUpdatePayload(meal, {
       date: this.mealEditDate || meal.date,
       entryType: this.canonicalEntryType(this.mealEditEntryType || meal.entryType),
@@ -1182,10 +1255,19 @@ export class FamilyMealiePlannerCard extends LitElement {
     if (this.recipeCreateOpen) this.recipeMessage = undefined;
   };
 
+  private setRecipeCreateMode(mode: RecipeCreateMode): void {
+    this.recipeCreateMode = mode;
+  }
+
+  private setSearch(value: string): void {
+    this.search = value;
+  }
+
   private openAddDialog(slot: SlotContext): void {
     this.selectedSlot = slot;
     this.selectedRecipe = undefined;
     this.search = "";
+    this.noteTitle = "";
     this.noteText = "";
     this.addDialogOpen = true;
   }
@@ -1207,7 +1289,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     this.mealEditDate = meal.date;
     this.mealEditEntryType = meal.entryType;
     this.noteEditTitle = meal.title;
-    this.noteEditText = meal.text ?? meal.title;
+    this.noteEditText = meal.text ?? "";
     this.recipeDialogOpen = true;
 
     if (meal.recipeSlug) {
@@ -1251,12 +1333,23 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private chooseRecipe(recipe: RecipeSummary): void {
     this.selectedRecipe = recipe;
+    this.noteTitle = "";
     this.noteText = "";
   }
 
   private chooseNote(note: string): void {
-    this.noteText = note;
+    this.noteTitle = note;
     this.selectedRecipe = undefined;
+  }
+
+  private updateNoteTitle(value: string): void {
+    this.noteTitle = value;
+    if (value) this.selectedRecipe = undefined;
+  }
+
+  private updateNoteText(value: string): void {
+    this.noteText = value;
+    if (value) this.selectedRecipe = undefined;
   }
 
   private onDateInput(event: InputEvent): void {
@@ -1521,6 +1614,75 @@ export class FamilyMealiePlannerCard extends LitElement {
     if (editSelect && this.selectedMeal) {
       editSelect.value = this.canonicalEntryType(this.mealEditEntryType || this.selectedMeal.entryType);
     }
+  }
+
+  private restoreDraft(): void {
+    if (this.draftRestored) return;
+    this.draftRestored = true;
+
+    const draft = readDraft(this.draftStorageKey());
+    if (!draft) return;
+
+    if (draft.view && ["planner", "recipes", "groceries"].includes(draft.view)) this.view = draft.view;
+    if (typeof draft.plannerOffsetDays === "number") this.plannerOffsetDays = draft.plannerOffsetDays;
+    if (typeof draft.search === "string") this.search = draft.search;
+    if (typeof draft.recipeCreateOpen === "boolean") this.recipeCreateOpen = draft.recipeCreateOpen;
+    if (draft.recipeCreateMode === "url" || draft.recipeCreateMode === "manual") this.recipeCreateMode = draft.recipeCreateMode;
+    if (typeof draft.recipeUrl === "string") this.recipeUrl = draft.recipeUrl;
+    if (typeof draft.manualRecipeName === "string") this.manualRecipeName = draft.manualRecipeName;
+    if (typeof draft.manualRecipeSource === "string") this.manualRecipeSource = draft.manualRecipeSource;
+    if (typeof draft.manualRecipeDescription === "string") this.manualRecipeDescription = draft.manualRecipeDescription;
+    if (typeof draft.manualRecipeServings === "string") this.manualRecipeServings = draft.manualRecipeServings;
+    if (typeof draft.manualRecipePrep === "string") this.manualRecipePrep = draft.manualRecipePrep;
+    if (typeof draft.manualRecipeCook === "string") this.manualRecipeCook = draft.manualRecipeCook;
+    if (typeof draft.manualRecipeTotal === "string") this.manualRecipeTotal = draft.manualRecipeTotal;
+    if (typeof draft.manualRecipeIngredients === "string") this.manualRecipeIngredients = draft.manualRecipeIngredients;
+    if (typeof draft.manualRecipeInstructions === "string") this.manualRecipeInstructions = draft.manualRecipeInstructions;
+    if (typeof draft.manualParseIngredients === "boolean") this.manualParseIngredients = draft.manualParseIngredients;
+    if (draft.selectedSlot?.date && draft.selectedSlot.entryType) {
+      this.selectedSlot = {
+        date: draft.selectedSlot.date,
+        entryType: this.canonicalEntryType(draft.selectedSlot.entryType),
+      };
+    }
+    if (typeof draft.noteTitle === "string") this.noteTitle = draft.noteTitle;
+    if (typeof draft.noteText === "string") this.noteText = draft.noteText;
+    if (draft.addDialogOpen && this.selectedSlot) this.addDialogOpen = true;
+  }
+
+  private scheduleDraftSave(): void {
+    window.clearTimeout(this.draftSaveTimer);
+    this.draftSaveTimer = window.setTimeout(() => this.saveDraftNow(), 150);
+  }
+
+  private saveDraftNow(): void {
+    window.clearTimeout(this.draftSaveTimer);
+    writeDraft(this.draftStorageKey(), {
+      view: this.view,
+      plannerOffsetDays: this.plannerOffsetDays,
+      search: this.search,
+      recipeCreateOpen: this.recipeCreateOpen,
+      recipeCreateMode: this.recipeCreateMode,
+      recipeUrl: this.recipeUrl,
+      manualRecipeName: this.manualRecipeName,
+      manualRecipeSource: this.manualRecipeSource,
+      manualRecipeDescription: this.manualRecipeDescription,
+      manualRecipeServings: this.manualRecipeServings,
+      manualRecipePrep: this.manualRecipePrep,
+      manualRecipeCook: this.manualRecipeCook,
+      manualRecipeTotal: this.manualRecipeTotal,
+      manualRecipeIngredients: this.manualRecipeIngredients,
+      manualRecipeInstructions: this.manualRecipeInstructions,
+      manualParseIngredients: this.manualParseIngredients,
+      addDialogOpen: this.addDialogOpen,
+      selectedSlot: this.selectedSlot,
+      noteTitle: this.noteTitle,
+      noteText: this.noteText,
+    });
+  }
+
+  private draftStorageKey(): string {
+    return `${DRAFT_STORAGE_PREFIX}:${this.config.entry_id ?? this.config.title ?? "default"}`;
   }
 
   static styles = css`
@@ -2186,6 +2348,16 @@ export class FamilyMealiePlannerCard extends LitElement {
       gap: 10px;
     }
 
+    .note-fields {
+      display: grid;
+      grid-template-columns: minmax(180px, 0.85fr) minmax(220px, 1.15fr);
+      gap: 12px;
+    }
+
+    .note-fields textarea {
+      min-height: 84px;
+    }
+
     .note-editor {
       display: grid;
       gap: 14px;
@@ -2299,6 +2471,7 @@ export class FamilyMealiePlannerCard extends LitElement {
 
       .field-row,
       .manual-recipe-form,
+      .note-fields,
       .recipe-toolbar,
       .recipe-url-row,
       .stats,
@@ -2463,9 +2636,9 @@ function mealPlanUpdatePayload(
     date: changes.date ?? meal.date,
     entryType: changes.entryType ?? meal.entryType,
     title: changes.title ?? meal.title,
-    text: changes.text ?? meal.text ?? meal.title,
+    text: changes.text ?? meal.text ?? "",
     recipeId: recipeId ?? null,
-  });
+  }, ["text"]);
 }
 
 function manualRecipePayload(form: ManualRecipeForm): Record<string, unknown> & { name: string } {
@@ -2566,8 +2739,29 @@ function unwrapObject(value: unknown): Record<string, unknown> | undefined {
   return value as Record<string, unknown>;
 }
 
-function compactObject(value: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined && item !== ""));
+function compactObject(value: Record<string, unknown>, keepEmptyKeys: string[] = []): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(value).filter(([key, item]) => item !== undefined && (item !== "" || keepEmptyKeys.includes(key))),
+  );
+}
+
+function readDraft(key: string): CardDraft | undefined {
+  try {
+    const value = window.localStorage.getItem(key);
+    if (!value) return undefined;
+    const parsed = JSON.parse(value);
+    return unwrapObject(parsed) as CardDraft | undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function writeDraft(key: string, draft: CardDraft): void {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(draft));
+  } catch {
+    // Best effort only. The card should keep working if storage is unavailable.
+  }
 }
 
 function canonicalEntryType(value: string, entryTypes: string[]): string {
