@@ -36,6 +36,12 @@ interface RecipeDetail extends RecipeSummary {
   totalTime?: string;
   ingredients: string[];
   instructions: string[];
+  notes: RecipeNoteDetail[];
+}
+
+interface RecipeNoteDetail {
+  title?: string;
+  text: string;
 }
 
 interface MealPlanItem {
@@ -84,6 +90,7 @@ interface ManualRecipeForm {
   total: string;
   ingredients: string;
   instructions: string;
+  notes: string;
   parseIngredients: boolean;
   ingredientParser: IngredientParser;
 }
@@ -104,6 +111,7 @@ interface CardDraft {
   manualRecipeTotal?: string;
   manualRecipeIngredients?: string;
   manualRecipeInstructions?: string;
+  manualRecipeNotes?: string;
   manualParseIngredients?: boolean;
   addDialogOpen?: boolean;
   selectedSlot?: SlotContext;
@@ -135,6 +143,7 @@ const DRAFT_FIELDS = new Set([
   "manualRecipeTotal",
   "manualRecipeIngredients",
   "manualRecipeInstructions",
+  "manualRecipeNotes",
   "manualParseIngredients",
   "addDialogOpen",
   "selectedSlot",
@@ -185,6 +194,7 @@ export class FamilyMealiePlannerCard extends LitElement {
   @state() private manualRecipeTotal = "";
   @state() private manualRecipeIngredients = "";
   @state() private manualRecipeInstructions = "";
+  @state() private manualRecipeNotes = "";
   @state() private manualParseIngredients = true;
   @state() private recipeSaving = false;
   @state() private recipeMessage?: string;
@@ -576,6 +586,13 @@ export class FamilyMealiePlannerCard extends LitElement {
             @input=${(event: InputEvent) => (this.manualRecipeInstructions = inputValue(event))}
           ></textarea>
         </label>
+        <label class="span-2">
+          Notes
+          <textarea
+            .value=${this.manualRecipeNotes}
+            @input=${(event: InputEvent) => (this.manualRecipeNotes = inputValue(event))}
+          ></textarea>
+        </label>
         <label class="check-row span-2">
           <input
             type="checkbox"
@@ -783,7 +800,7 @@ export class FamilyMealiePlannerCard extends LitElement {
                   : nothing}
 
                 <div class="stats">
-                  ${this.stat("Servings", detail?.servings)}
+                  ${this.stat("Serves", detail?.servings)}
                   ${this.stat("Prep", detail?.prepTime)}
                   ${this.stat("Cook", detail?.cookTime)}
                   ${this.stat("Total", detail?.totalTime)}
@@ -809,6 +826,24 @@ export class FamilyMealiePlannerCard extends LitElement {
                         <ol>
                           ${detail.instructions.map((step) => html`<li>${step}</li>`)}
                         </ol>
+                      </section>
+                    `
+                  : nothing}
+
+                ${detail?.notes.length
+                  ? html`
+                      <section class="cook-section">
+                        <h4>Notes</h4>
+                        <div class="recipe-notes">
+                          ${detail.notes.map(
+                            (note) => html`
+                              <article>
+                                ${note.title ? html`<strong>${note.title}</strong>` : nothing}
+                                <p>${note.text}</p>
+                              </article>
+                            `,
+                          )}
+                        </div>
                       </section>
                     `
                   : nothing}
@@ -1009,6 +1044,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       total: this.manualRecipeTotal,
       ingredients: this.manualRecipeIngredients,
       instructions: this.manualRecipeInstructions,
+      notes: this.manualRecipeNotes,
       parseIngredients: this.manualParseIngredients,
       ingredientParser: this.config.ingredient_parser ?? "auto",
     });
@@ -1247,6 +1283,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     this.manualRecipeTotal = "";
     this.manualRecipeIngredients = "";
     this.manualRecipeInstructions = "";
+    this.manualRecipeNotes = "";
     this.manualParseIngredients = true;
   }
 
@@ -1638,6 +1675,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     if (typeof draft.manualRecipeTotal === "string") this.manualRecipeTotal = draft.manualRecipeTotal;
     if (typeof draft.manualRecipeIngredients === "string") this.manualRecipeIngredients = draft.manualRecipeIngredients;
     if (typeof draft.manualRecipeInstructions === "string") this.manualRecipeInstructions = draft.manualRecipeInstructions;
+    if (typeof draft.manualRecipeNotes === "string") this.manualRecipeNotes = draft.manualRecipeNotes;
     if (typeof draft.manualParseIngredients === "boolean") this.manualParseIngredients = draft.manualParseIngredients;
     if (draft.selectedSlot?.date && draft.selectedSlot.entryType) {
       this.selectedSlot = {
@@ -1673,6 +1711,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       manualRecipeTotal: this.manualRecipeTotal,
       manualRecipeIngredients: this.manualRecipeIngredients,
       manualRecipeInstructions: this.manualRecipeInstructions,
+      manualRecipeNotes: this.manualRecipeNotes,
       manualParseIngredients: this.manualParseIngredients,
       addDialogOpen: this.addDialogOpen,
       selectedSlot: this.selectedSlot,
@@ -2428,6 +2467,25 @@ export class FamilyMealiePlannerCard extends LitElement {
       margin-top: 10px;
     }
 
+    .recipe-notes {
+      display: grid;
+      gap: 10px;
+    }
+
+    .recipe-notes article {
+      display: grid;
+      gap: 6px;
+      padding: 12px 14px;
+      border: 1px solid var(--meal-card-line);
+      border-radius: var(--meal-card-radius);
+      background: color-mix(in srgb, var(--meal-card-surface) 92%, var(--primary-background-color, #f6f6f6));
+    }
+
+    .recipe-notes p {
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
     .recipe-actions {
       display: flex;
       flex-wrap: wrap;
@@ -2514,12 +2572,16 @@ function normalizeRecipeDetail(value: unknown, imageToken?: string): RecipeDetai
 
   return {
     ...summary,
-    servings: stringValue(object.recipe_yield) ?? stringValue(object.servings) ?? stringValue(object.recipeYield),
+    servings: formatServings(
+      object.recipe_servings ?? object.recipeServings ?? object.servings,
+      object.recipe_yield ?? object.recipeYield,
+    ),
     prepTime: formatDuration(object.prep_time ?? object.prepTime),
     cookTime: formatDuration(object.cook_time ?? object.cookTime),
     totalTime: formatDuration(object.total_time ?? object.totalTime),
     ingredients: normalizeIngredients(object.recipe_ingredient ?? object.ingredients ?? object.recipeIngredient),
     instructions: normalizeInstructions(object.recipe_instructions ?? object.instructions ?? object.recipeInstructions),
+    notes: normalizeRecipeNotes(object.notes ?? object.recipe_notes ?? object.recipeNotes),
   };
 }
 
@@ -2645,6 +2707,7 @@ function manualRecipePayload(form: ManualRecipeForm): Record<string, unknown> & 
   const servings = positiveNumber(form.servings);
   const ingredients = textLines(form.ingredients);
   const instructions = textLines(form.instructions);
+  const notes = textLines(form.notes);
 
   return {
     name: form.name.trim(),
@@ -2671,6 +2734,12 @@ function manualRecipePayload(form: ManualRecipeForm): Record<string, unknown> & 
             ingredientReferences: [],
           }))
         : undefined,
+      notes: notes.length
+        ? notes.map((line) => ({
+            title: "",
+            text: line,
+          }))
+        : undefined,
       parseIngredients: form.parseIngredients,
       ingredientParser: form.ingredientParser,
     }),
@@ -2693,6 +2762,15 @@ function timeText(value: string): string | undefined {
   const text = value.trim();
   if (!text) return undefined;
   return /^\d+$/.test(text) ? `${text} min` : text;
+}
+
+function formatServings(servingsValue: unknown, yieldValue: unknown): string | undefined {
+  const servings = stringValue(servingsValue);
+  const recipeYield = stringValue(yieldValue);
+  if (servings && recipeYield && recipeYield !== servings) {
+    return recipeYield.toLocaleLowerCase().includes("serv") ? recipeYield : `${servings} (${recipeYield})`;
+  }
+  return servings ?? recipeYield;
 }
 
 function normalizeIngredients(value: unknown): string[] {
@@ -2721,6 +2799,33 @@ function normalizeInstructions(value: unknown): string[] {
       return text ? [stripHtml(text)] : [];
     })
     .filter(Boolean);
+}
+
+function normalizeRecipeNotes(value: unknown): RecipeNoteDetail[] {
+  if (typeof value === "string") {
+    const text = stripHtml(value);
+    return text ? [{ text }] : [];
+  }
+
+  return unwrapArray(value)
+    .map((item) => {
+      if (typeof item === "string") {
+        const text = stripHtml(item);
+        return text ? { text } : undefined;
+      }
+
+      const object = unwrapObject(item);
+      if (!object) return undefined;
+      const title = stringValue(object.title) ?? stringValue(object.name);
+      const text = stringValue(object.text) ?? stringValue(object.note) ?? stringValue(object.summary);
+      const cleanText = text ? stripHtml(text) : undefined;
+      if (!cleanText && !title) return undefined;
+      return {
+        title: cleanText ? title : undefined,
+        text: cleanText ?? title ?? "",
+      };
+    })
+    .filter((item): item is RecipeNoteDetail => Boolean(item?.text));
 }
 
 function unwrapArray(value: unknown): unknown[] {

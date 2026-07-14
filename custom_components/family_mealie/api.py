@@ -91,6 +91,7 @@ class FamilyMealieClient:
                 "totalTime": payload.get("totalTime") or payload.get("total_time"),
                 "recipeIngredient": payload.get("recipeIngredient") or payload.get("recipe_ingredient"),
                 "recipeInstructions": payload.get("recipeInstructions") or payload.get("recipe_instructions"),
+                "notes": payload.get("notes") or payload.get("recipeNotes") or payload.get("recipe_notes"),
             }
         )
         try:
@@ -108,6 +109,7 @@ class FamilyMealieClient:
                     "totalTime": payload.get("totalTime") or payload.get("total_time"),
                     "recipeIngredient": plain_ingredient_lines(ingredients) if isinstance(ingredients, list) else ingredients,
                     "recipeInstructions": payload.get("recipeInstructions") or payload.get("recipe_instructions"),
+                    "notes": payload.get("notes") or payload.get("recipeNotes") or payload.get("recipe_notes"),
                 }
             )
             return await self.put_with_alias_fallback(f"/api/recipes/{quote(slug, safe='')}", fallback)

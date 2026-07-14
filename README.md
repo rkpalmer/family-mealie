@@ -121,6 +121,7 @@ entry_id: your_family_mealie_config_entry_id
 - Remove meal-plan entries through Mealie's native API.
 - Recipe search.
 - Recipe detail/cooking dialog.
+- Recipe notes and serving/prep/cook details.
 - Recipe image proxy through Home Assistant.
 - Grocery list tab.
 - Create grocery lists.
