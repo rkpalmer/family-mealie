@@ -278,27 +278,34 @@ export class FamilyMealiePlannerCard extends LitElement {
       <ha-card>
         <section class="shell">
           <header class="topbar">
-            <div>
+            <div class="hero-icon"><ha-icon icon="mdi:silverware-fork-knife"></ha-icon></div>
+            <div class="hero-copy">
+              <p class="eyebrow">Family Mealie</p>
               <h2>${this.config.title}</h2>
               <p>${this.subtitle()}</p>
             </div>
             <div class="top-actions">
               ${this.view === "planner"
-                ? html`<button class="secondary action" @click=${this.openDefaultAddDialog}>Add meal</button>`
+                ? html`
+                    <button class="secondary action add-button" @click=${this.openDefaultAddDialog}>
+                      <ha-icon icon="mdi:plus"></ha-icon>
+                      <span>Add meal</span>
+                    </button>
+                  `
                 : nothing}
-              <button class="primary action" title="Refresh" @click=${this.refreshAll} ?disabled=${this.loading}>
-                ${this.loading ? "Refreshing" : "Refresh"}
+              <button class="icon-button refresh-button" title="Refresh" @click=${this.refreshAll} ?disabled=${this.loading}>
+                <ha-icon class=${this.loading ? "spin" : ""} icon=${this.loading ? "mdi:loading" : "mdi:refresh"}></ha-icon>
               </button>
             </div>
           </header>
 
           <nav class="tabs">
-            ${this.renderTab("planner", "Planner")}
-            ${this.renderTab("recipes", "Recipes")}
-            ${this.renderTab("groceries", "Groceries")}
+            ${this.renderTab("planner", "Planner", "mdi:calendar-week-outline")}
+            ${this.renderTab("recipes", "Recipes", "mdi:chef-hat")}
+            ${this.renderTab("groceries", "Groceries", "mdi:cart-outline")}
           </nav>
 
-          ${this.error ? html`<div class="notice">${this.error}</div>` : nothing}
+          ${this.error ? html`<div class="notice error"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${this.error}</div>` : nothing}
           ${this.view === "planner" ? this.renderPlanner() : nothing}
           ${this.view === "recipes" ? this.renderRecipes() : nothing}
           ${this.view === "groceries" ? this.renderGroceries() : nothing}
@@ -309,10 +316,11 @@ export class FamilyMealiePlannerCard extends LitElement {
     `;
   }
 
-  private renderTab(view: MainView, label: string) {
+  private renderTab(view: MainView, label: string, icon: string) {
     return html`
       <button class=${this.view === view ? "active" : ""} @click=${() => this.openView(view)}>
-        ${label}
+        <ha-icon icon=${icon}></ha-icon>
+        <span>${label}</span>
       </button>
     `;
   }
@@ -445,7 +453,8 @@ export class FamilyMealiePlannerCard extends LitElement {
           />
         </label>
         <button class="secondary" @click=${this.toggleRecipeCreate}>
-          ${this.recipeCreateOpen ? "Hide add recipe" : "Add recipe"}
+          <ha-icon icon=${this.recipeCreateOpen ? "mdi:chevron-up" : "mdi:plus"}></ha-icon>
+          <span>${this.recipeCreateOpen ? "Hide add recipe" : "Add recipe"}</span>
         </button>
       </div>
 
@@ -456,19 +465,21 @@ export class FamilyMealiePlannerCard extends LitElement {
                 <h3>Add recipe</h3>
                 <div class="mode-tabs">
                   <button class=${this.recipeCreateMode === "url" ? "active" : ""} @click=${() => this.setRecipeCreateMode("url")}>
-                    Import URL
+                    <ha-icon icon="mdi:link-variant"></ha-icon>
+                    <span>Import URL</span>
                   </button>
                   <button class=${this.recipeCreateMode === "manual" ? "active" : ""} @click=${() => this.setRecipeCreateMode("manual")}>
-                    Manual
+                    <ha-icon icon="mdi:pencil-outline"></ha-icon>
+                    <span>Manual</span>
                   </button>
                 </div>
               </header>
-              ${this.recipeMessage ? html`<div class="success">${this.recipeMessage}</div>` : nothing}
+              ${this.recipeMessage ? html`<div class="success"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.recipeMessage}</div>` : nothing}
               ${this.recipeCreateMode === "url" ? this.renderRecipeUrlCreate() : this.renderRecipeManualCreate()}
             </section>
           `
         : this.recipeMessage
-          ? html`<div class="success compact">${this.recipeMessage}</div>`
+          ? html`<div class="success compact"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.recipeMessage}</div>`
           : nothing}
 
       <div class="recipe-grid">
@@ -497,7 +508,8 @@ export class FamilyMealiePlannerCard extends LitElement {
           />
         </label>
         <button class="primary" @click=${this.importRecipeUrl} ?disabled=${this.recipeSaving || !this.recipeUrl.trim()}>
-          ${this.recipeSaving ? "Importing" : "Import"}
+          <ha-icon class=${this.recipeSaving ? "spin" : ""} icon=${this.recipeSaving ? "mdi:loading" : "mdi:import"}></ha-icon>
+          <span>${this.recipeSaving ? "Importing" : "Import"}</span>
         </button>
       </div>
     `;
@@ -603,7 +615,8 @@ export class FamilyMealiePlannerCard extends LitElement {
         </label>
         <footer class="span-2">
           <button class="primary" @click=${this.createManualRecipe} ?disabled=${this.recipeSaving || !this.manualRecipeName.trim()}>
-            ${this.recipeSaving ? "Saving" : "Save recipe"}
+            <ha-icon class=${this.recipeSaving ? "spin" : ""} icon=${this.recipeSaving ? "mdi:loading" : "mdi:content-save-outline"}></ha-icon>
+            <span>${this.recipeSaving ? "Saving" : "Save recipe"}</span>
           </button>
         </footer>
       </div>
@@ -616,7 +629,10 @@ export class FamilyMealiePlannerCard extends LitElement {
         <aside class="list-rail">
           <div class="rail-head">
             <strong>Lists</strong>
-            <button class="small" @click=${this.createShoppingList} ?disabled=${!this.newListName.trim()}>Create</button>
+            <button class="small secondary" @click=${this.createShoppingList} ?disabled=${!this.newListName.trim()}>
+              <ha-icon icon="mdi:plus"></ha-icon>
+              <span>Create</span>
+            </button>
           </div>
           <input
             type="text"
@@ -644,8 +660,8 @@ export class FamilyMealiePlannerCard extends LitElement {
             ? html`
                 <header>
                   <h3>${this.selectedShoppingList.name}</h3>
-                  <button class="plain" @click=${() => this.selectedShoppingListId && this.loadShoppingList(this.selectedShoppingListId)}>
-                    Refresh
+                  <button class="icon-button" title="Refresh list" @click=${() => this.selectedShoppingListId && this.loadShoppingList(this.selectedShoppingListId)}>
+                    <ha-icon icon="mdi:refresh"></ha-icon>
                   </button>
                 </header>
                 <div class="add-grocery">
@@ -656,10 +672,13 @@ export class FamilyMealiePlannerCard extends LitElement {
                     @input=${(event: InputEvent) => (this.groceryText = inputValue(event))}
                     @keydown=${this.onGroceryKeyDown}
                   />
-                  <button class="primary" @click=${this.addShoppingItem} ?disabled=${!this.groceryText.trim()}>Add</button>
+                  <button class="primary" @click=${this.addShoppingItem} ?disabled=${!this.groceryText.trim()}>
+                    <ha-icon icon="mdi:plus"></ha-icon>
+                    <span>Add</span>
+                  </button>
                 </div>
                 <div class="grocery-items">
-                  ${this.selectedShoppingList.items.map((item) => this.renderShoppingItem(item))}
+                  ${this.groceryItemsForDisplay(this.selectedShoppingList).map((item) => this.renderShoppingItem(item))}
                 </div>
               `
             : html`<div class="empty-panel">Create or choose a grocery list.</div>`}
@@ -670,7 +689,7 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private renderShoppingItem(item: ShoppingListItem) {
     return html`
-      <label class="grocery-item">
+      <label class=${item.checked ? "grocery-item checked" : "grocery-item"}>
         <input
           type="checkbox"
           .checked=${item.checked}
@@ -680,6 +699,13 @@ export class FamilyMealiePlannerCard extends LitElement {
         <button class="delete-inline" @click=${(event: Event) => this.deleteShoppingItem(event, item)}>Remove</button>
       </label>
     `;
+  }
+
+  private groceryItemsForDisplay(list: ShoppingListDetail): ShoppingListItem[] {
+    return [
+      ...list.items.filter((item) => !item.checked),
+      ...list.items.filter((item) => item.checked),
+    ];
   }
 
   private renderAddDialog() {
@@ -762,7 +788,8 @@ export class FamilyMealiePlannerCard extends LitElement {
 
           <footer>
             <button type="button" class="primary" @click=${this.addMeal} ?disabled=${!this.selectedRecipe && !this.noteTitle.trim()}>
-              Add to plan
+              <ha-icon icon="mdi:calendar-plus"></ha-icon>
+              <span>Add to plan</span>
             </button>
           </footer>
         </form>
@@ -776,6 +803,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     const title = this.selectedMeal?.title ?? this.selectedRecipeForDialog?.name ?? "Recipe";
     const entryType = this.selectedMeal?.entryType;
     const isNoteMeal = Boolean(this.selectedMeal && !this.selectedMeal.recipeSlug && !this.selectedMeal.recipeId);
+    const planRecipe = detail ?? this.selectedRecipeForDialog;
 
     return html`
       <dialog class="dialog recipe" @cancel=${this.closeRecipeDialog}>
@@ -854,14 +882,24 @@ export class FamilyMealiePlannerCard extends LitElement {
             ${isNoteMeal
               ? html`
                   <button class="primary" @click=${this.saveNoteMeal} ?disabled=${this.mealSaving || !this.noteEditTitle.trim()}>
-                    ${this.mealSaving ? "Saving" : "Save note"}
+                    <ha-icon class=${this.mealSaving ? "spin" : ""} icon=${this.mealSaving ? "mdi:loading" : "mdi:content-save-outline"}></ha-icon>
+                    <span>${this.mealSaving ? "Saving" : "Save note"}</span>
                   </button>
                 `
               : nothing}
             ${this.selectedMeal && !isNoteMeal
               ? html`
                   <button class="primary" @click=${this.saveMealPlacement} ?disabled=${this.mealSaving || !this.mealPlacementChanged()}>
-                    ${this.mealSaving ? "Saving" : "Save changes"}
+                    <ha-icon class=${this.mealSaving ? "spin" : ""} icon=${this.mealSaving ? "mdi:loading" : "mdi:content-save-outline"}></ha-icon>
+                    <span>${this.mealSaving ? "Saving" : "Save changes"}</span>
+                  </button>
+                `
+              : nothing}
+            ${!this.selectedMeal && !isNoteMeal && planRecipe
+              ? html`
+                  <button class="primary" @click=${this.planRecipeFromDialog} ?disabled=${!planRecipe.id}>
+                    <ha-icon icon="mdi:calendar-plus"></ha-icon>
+                    <span>Plan meal</span>
                   </button>
                 `
               : nothing}
@@ -871,7 +909,8 @@ export class FamilyMealiePlannerCard extends LitElement {
                     ${this.shoppingLists.map((list) => html`<option .value=${list.id}>${list.name}</option>`)}
                   </select>
                   <button class="primary" @click=${() => detail?.id && this.addRecipeToGroceries(detail.id)}>
-                    Add ingredients
+                    <ha-icon icon="mdi:cart-plus"></ha-icon>
+                    <span>Add ingredients</span>
                   </button>
                 `
               : nothing}
@@ -1300,10 +1339,10 @@ export class FamilyMealiePlannerCard extends LitElement {
     this.search = value;
   }
 
-  private openAddDialog(slot: SlotContext): void {
+  private openAddDialog(slot: SlotContext, recipe?: RecipeSummary): void {
     this.selectedSlot = slot;
-    this.selectedRecipe = undefined;
-    this.search = "";
+    this.selectedRecipe = recipe;
+    this.search = recipe?.name ?? "";
     this.noteTitle = "";
     this.noteText = "";
     this.addDialogOpen = true;
@@ -1313,6 +1352,27 @@ export class FamilyMealiePlannerCard extends LitElement {
     const firstDay = this.daysToShow()[0] ?? startOfDay(new Date());
     const entryType = this.entryTypes()[0] ?? DEFAULT_ENTRY_TYPES[0];
     this.openAddDialog({ date: toDateString(firstDay), entryType });
+  };
+
+  private defaultRecipePlanSlot(): SlotContext {
+    const [start, end] = this.dateRange();
+    const today = toDateString(startOfDay(new Date()));
+    const entryType = this.entryTypes()[0] ?? DEFAULT_ENTRY_TYPES[0];
+    return {
+      date: today >= start && today <= end ? today : start,
+      entryType,
+    };
+  }
+
+  private planRecipeFromDialog = (): void => {
+    const recipe = this.recipeDetail ?? this.selectedRecipeForDialog;
+    if (!recipe?.id) return;
+
+    this.closeRecipeDialog();
+    this.selectedMeal = undefined;
+    this.selectedRecipeForDialog = undefined;
+    this.recipeDetail = undefined;
+    this.openAddDialog(this.defaultRecipePlanSlot(), recipe);
   };
 
   private closeAddDialog = (): void => {
@@ -1728,17 +1788,22 @@ export class FamilyMealiePlannerCard extends LitElement {
     :host {
       display: block;
       color: var(--primary-text-color);
-      --meal-card-radius: 8px;
+      container-type: inline-size;
+      --family-accent: var(--primary-color, #4f7765);
+      --family-accent-soft: color-mix(in srgb, var(--family-accent) 12%, var(--card-background-color, #fff));
+      --family-warm: color-mix(in srgb, #e8bc7c 12%, var(--card-background-color, #fff));
+      --meal-card-radius: 14px;
       --meal-card-touch: 52px;
       --meal-card-surface: var(--card-background-color, #fff);
       --meal-card-muted: var(--secondary-text-color, #6b7280);
       --meal-card-line: var(--divider-color, rgba(0, 0, 0, 0.12));
-      --meal-card-accent: var(--primary-color, #4f7f68);
+      --meal-card-accent: var(--family-accent);
       --meal-card-warning: var(--error-color, #b3261e);
     }
 
     ha-card {
       overflow: hidden;
+      border-radius: 26px;
       background: var(--meal-card-surface);
     }
 
@@ -1766,6 +1831,43 @@ export class FamilyMealiePlannerCard extends LitElement {
       gap: 10px;
     }
 
+    .topbar {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) auto;
+      align-items: center;
+      margin: -20px -20px 0;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--meal-card-line);
+      background: linear-gradient(120deg, var(--family-accent-soft), color-mix(in srgb, #e8bc7c 10%, var(--meal-card-surface)));
+    }
+
+    .hero-icon {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      color: var(--family-accent);
+      background: color-mix(in srgb, var(--family-accent) 15%, transparent);
+    }
+
+    .hero-icon ha-icon {
+      --mdc-icon-size: 30px;
+    }
+
+    .hero-copy {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 3px;
+      color: var(--family-accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
     h2,
     h3,
     h4,
@@ -1776,6 +1878,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     h2 {
       font-size: 28px;
       line-height: 1.1;
+      letter-spacing: -0.02em;
     }
 
     h3 {
@@ -1794,6 +1897,12 @@ export class FamilyMealiePlannerCard extends LitElement {
       text-transform: uppercase;
     }
 
+    .topbar .eyebrow {
+      color: var(--family-accent);
+      font-size: 11px;
+      letter-spacing: 0.13em;
+    }
+
     button,
     input,
     select,
@@ -1804,7 +1913,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     button {
       min-height: var(--meal-card-touch);
       border: 1px solid var(--meal-card-line);
-      border-radius: var(--meal-card-radius);
+      border-radius: 13px;
       background: var(--meal-card-surface);
       color: var(--primary-text-color);
       cursor: pointer;
@@ -1816,19 +1925,59 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
 
     .primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
       border-color: transparent;
       background: var(--meal-card-accent);
       color: var(--text-primary-color, #fff);
       font-weight: 800;
       padding: 0 18px;
+      box-shadow: 0 7px 18px color-mix(in srgb, var(--meal-card-accent) 24%, transparent);
+    }
+
+    .primary:disabled {
+      box-shadow: none;
     }
 
     .secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
       border-color: color-mix(in srgb, var(--meal-card-accent) 30%, var(--meal-card-line));
-      background: color-mix(in srgb, var(--meal-card-accent) 10%, var(--meal-card-surface));
+      background: var(--family-accent-soft);
       color: var(--meal-card-accent);
       font-weight: 800;
       padding: 0 18px;
+    }
+
+    .icon-button {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: var(--secondary-background-color);
+      cursor: pointer;
+    }
+
+    .primary ha-icon,
+    .secondary ha-icon,
+    .icon-button ha-icon {
+      --mdc-icon-size: 20px;
+    }
+
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .action {
@@ -1863,15 +2012,25 @@ export class FamilyMealiePlannerCard extends LitElement {
       margin-top: 18px;
       padding: 6px;
       border: 1px solid var(--meal-card-line);
-      border-radius: var(--meal-card-radius);
+      border-radius: 16px;
       background: color-mix(in srgb, var(--primary-background-color, #f6f6f6) 72%, var(--meal-card-surface));
     }
 
     .tabs button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
       min-height: 44px;
+      border-radius: 12px;
       border: 0;
       font-weight: 800;
       background: transparent;
+    }
+
+    .tabs ha-icon {
+      color: var(--meal-card-accent);
+      --mdc-icon-size: 20px;
     }
 
     .tabs button.active {
@@ -1880,10 +2039,17 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
 
     .notice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       margin-top: 16px;
       padding: 12px 14px;
-      border: 1px solid color-mix(in srgb, var(--meal-card-warning) 35%, transparent);
       border-radius: var(--meal-card-radius);
+      font-size: 13px;
+    }
+
+    .notice.error {
+      border: 1px solid color-mix(in srgb, var(--meal-card-warning) 35%, transparent);
       background: color-mix(in srgb, var(--meal-card-warning) 9%, var(--meal-card-surface));
       color: var(--meal-card-warning);
     }
@@ -1900,8 +2066,9 @@ export class FamilyMealiePlannerCard extends LitElement {
     .day {
       min-width: 178px;
       border: 1px solid var(--meal-card-line);
-      border-radius: var(--meal-card-radius);
+      border-radius: 18px;
       background: color-mix(in srgb, var(--meal-card-surface) 90%, var(--primary-background-color, #f6f6f6));
+      overflow: hidden;
     }
 
     .day-head {
@@ -2003,7 +2170,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       min-height: 64px;
       padding: 12px;
       border: 1px solid var(--meal-card-line);
-      border-radius: var(--meal-card-radius);
+      border-radius: 12px;
       background: var(--meal-card-surface);
       text-align: left;
       box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
@@ -2050,7 +2217,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       gap: 14px;
       padding: 14px;
       border: 1px solid var(--meal-card-line);
-      border-radius: var(--meal-card-radius);
+      border-radius: 18px;
       background: color-mix(in srgb, var(--meal-card-surface) 94%, var(--primary-background-color, #f6f6f6));
     }
 
@@ -2072,11 +2239,19 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
 
     .mode-tabs button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       min-height: 40px;
       border: 0;
       padding: 0 12px;
       background: transparent;
       font-weight: 800;
+    }
+
+    .mode-tabs ha-icon {
+      --mdc-icon-size: 18px;
     }
 
     .mode-tabs button.active {
@@ -2108,6 +2283,9 @@ export class FamilyMealiePlannerCard extends LitElement {
     }
 
     .success {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       padding: 10px 12px;
       border: 1px solid color-mix(in srgb, var(--meal-card-accent) 35%, transparent);
       border-radius: var(--meal-card-radius);
@@ -2147,6 +2325,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       gap: 10px;
       min-height: 210px;
       padding: 10px;
+      border-radius: 16px;
       text-align: left;
       font-weight: 800;
     }
@@ -2178,7 +2357,7 @@ export class FamilyMealiePlannerCard extends LitElement {
     .grocery-main,
     .empty-panel {
       border: 1px solid var(--meal-card-line);
-      border-radius: var(--meal-card-radius);
+      border-radius: 18px;
       background: color-mix(in srgb, var(--meal-card-surface) 92%, var(--primary-background-color, #f6f6f6));
     }
 
@@ -2246,6 +2425,11 @@ export class FamilyMealiePlannerCard extends LitElement {
       font-weight: 750;
     }
 
+    .grocery-item.checked {
+      opacity: 0.72;
+      background: color-mix(in srgb, var(--meal-card-surface) 88%, var(--primary-background-color, #f6f6f6));
+    }
+
     .grocery-item input {
       min-height: auto;
       width: 24px;
@@ -2276,7 +2460,7 @@ export class FamilyMealiePlannerCard extends LitElement {
       width: min(980px, calc(100vw - 32px));
       max-height: min(860px, calc(100vh - 32px));
       border: 0;
-      border-radius: var(--meal-card-radius);
+      border-radius: 22px;
       padding: 0;
       background: var(--meal-card-surface);
       color: var(--primary-text-color);
@@ -2319,10 +2503,18 @@ export class FamilyMealiePlannerCard extends LitElement {
     textarea {
       min-height: var(--meal-card-touch);
       border: 1px solid var(--meal-card-line);
-      border-radius: var(--meal-card-radius);
+      border-radius: 12px;
       padding: 0 14px;
       background: var(--meal-card-surface);
       color: var(--primary-text-color);
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--meal-card-accent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--meal-card-accent) 14%, transparent);
     }
 
     textarea {
@@ -2510,12 +2702,29 @@ export class FamilyMealiePlannerCard extends LitElement {
       }
 
       .topbar {
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: flex-start;
+        margin: -14px -14px 0;
+        padding: 18px;
+      }
+
+      .hero-icon {
+        display: none;
       }
 
       .top-actions {
         flex-wrap: wrap;
         justify-content: flex-end;
+      }
+
+      .add-button {
+        min-width: 44px;
+        width: 44px;
+        padding: 0;
+      }
+
+      .add-button span {
+        display: none;
       }
 
       .tabs {
