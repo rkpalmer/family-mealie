@@ -83,7 +83,7 @@ After the integration is loaded, it serves the bundled card at:
 Add a Lovelace resource:
 
 ```text
-URL: /family_mealie/family-mealie-planner-card.js?v=13
+URL: /family_mealie/family-mealie-planner-card.js?v=14
 Type: JavaScript Module
 ```
 

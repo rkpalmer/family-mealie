@@ -3,18 +3,18 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const q = globalThis, ie = q.ShadowRoot && (q.ShadyCSS === void 0 || q.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, ae = Symbol(), ce = /* @__PURE__ */ new WeakMap();
-let be = class {
+const W = globalThis, oe = W.ShadowRoot && (W.ShadyCSS === void 0 || W.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, le = Symbol(), ge = /* @__PURE__ */ new WeakMap();
+let ke = class {
   constructor(t, i, a) {
-    if (this._$cssResult$ = !0, a !== ae) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    if (this._$cssResult$ = !0, a !== le) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
     this.cssText = t, this.t = i;
   }
   get styleSheet() {
     let t = this.o;
     const i = this.t;
-    if (ie && t === void 0) {
+    if (oe && t === void 0) {
       const a = i !== void 0 && i.length === 1;
-      a && (t = ce.get(i)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), a && ce.set(i, t));
+      a && (t = ge.get(i)), t === void 0 && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), a && ge.set(i, t));
     }
     return t;
   }
@@ -22,33 +22,33 @@ let be = class {
     return this.cssText;
   }
 };
-const Ee = (e) => new be(typeof e == "string" ? e : e + "", void 0, ae), Ie = (e, ...t) => {
+const ze = (e) => new ke(typeof e == "string" ? e : e + "", void 0, le), Fe = (e, ...t) => {
   const i = e.length === 1 ? e[0] : t.reduce((a, r, s) => a + ((n) => {
     if (n._$cssResult$ === !0) return n.cssText;
     if (typeof n == "number") return n;
     throw Error("Value passed to 'css' function must be a 'css' function result: " + n + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
   })(r) + e[s + 1], e[0]);
-  return new be(i, e, ae);
-}, Ae = (e, t) => {
-  if (ie) e.adoptedStyleSheets = t.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
+  return new ke(i, e, le);
+}, He = (e, t) => {
+  if (oe) e.adoptedStyleSheets = t.map((i) => i instanceof CSSStyleSheet ? i : i.styleSheet);
   else for (const i of t) {
-    const a = document.createElement("style"), r = q.litNonce;
+    const a = document.createElement("style"), r = W.litNonce;
     r !== void 0 && a.setAttribute("nonce", r), a.textContent = i.cssText, e.appendChild(a);
   }
-}, pe = ie ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
+}, fe = oe ? (e) => e : (e) => e instanceof CSSStyleSheet ? ((t) => {
   let i = "";
   for (const a of t.cssRules) i += a.cssText;
-  return Ee(i);
+  return ze(i);
 })(e) : e;
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Ce, defineProperty: Pe, getOwnPropertyDescriptor: Le, getOwnPropertyNames: Oe, getOwnPropertySymbols: Ne, getPrototypeOf: Ue } = Object, Y = globalThis, de = Y.trustedTypes, ze = de ? de.emptyScript : "", Fe = Y.reactiveElementPolyfillSupport, O = (e, t) => e, V = { toAttribute(e, t) {
+const { is: je, defineProperty: Be, getOwnPropertyDescriptor: qe, getOwnPropertyNames: Ke, getOwnPropertySymbols: Ve, getPrototypeOf: We } = Object, J = globalThis, ye = J.trustedTypes, Ye = ye ? ye.emptyScript : "", Ge = J.reactiveElementPolyfillSupport, H = (e, t) => e, G = { toAttribute(e, t) {
   switch (t) {
     case Boolean:
-      e = e ? ze : null;
+      e = e ? Ye : null;
       break;
     case Object:
     case Array:
@@ -73,44 +73,44 @@ const { is: Ce, defineProperty: Pe, getOwnPropertyDescriptor: Le, getOwnProperty
       }
   }
   return i;
-} }, re = (e, t) => !Ce(e, t), he = { attribute: !0, type: String, converter: V, reflect: !1, useDefault: !1, hasChanged: re };
-Symbol.metadata ??= Symbol("metadata"), Y.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let k = class extends HTMLElement {
+} }, ce = (e, t) => !je(e, t), ve = { attribute: !0, type: String, converter: G, reflect: !1, useDefault: !1, hasChanged: ce };
+Symbol.metadata ??= Symbol("metadata"), J.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+let C = class extends HTMLElement {
   static addInitializer(t) {
     this._$Ei(), (this.l ??= []).push(t);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(t, i = he) {
+  static createProperty(t, i = ve) {
     if (i.state && (i.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((i = Object.create(i)).wrapped = !0), this.elementProperties.set(t, i), !i.noAccessor) {
       const a = Symbol(), r = this.getPropertyDescriptor(t, a, i);
-      r !== void 0 && Pe(this.prototype, t, r);
+      r !== void 0 && Be(this.prototype, t, r);
     }
   }
   static getPropertyDescriptor(t, i, a) {
-    const { get: r, set: s } = Le(this.prototype, t) ?? { get() {
+    const { get: r, set: s } = qe(this.prototype, t) ?? { get() {
       return this[i];
     }, set(n) {
       this[i] = n;
     } };
     return { get: r, set(n) {
-      const m = r?.call(this);
-      s?.call(this, n), this.requestUpdate(t, m, a);
+      const d = r?.call(this);
+      s?.call(this, n), this.requestUpdate(t, d, a);
     }, configurable: !0, enumerable: !0 };
   }
   static getPropertyOptions(t) {
-    return this.elementProperties.get(t) ?? he;
+    return this.elementProperties.get(t) ?? ve;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(O("elementProperties"))) return;
-    const t = Ue(this);
+    if (this.hasOwnProperty(H("elementProperties"))) return;
+    const t = We(this);
     t.finalize(), t.l !== void 0 && (this.l = [...t.l]), this.elementProperties = new Map(t.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(O("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(O("properties"))) {
-      const i = this.properties, a = [...Oe(i), ...Ne(i)];
+    if (this.hasOwnProperty(H("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(H("properties"))) {
+      const i = this.properties, a = [...Ke(i), ...Ve(i)];
       for (const r of a) this.createProperty(r, i[r]);
     }
     const t = this[Symbol.metadata];
@@ -129,8 +129,8 @@ let k = class extends HTMLElement {
     const i = [];
     if (Array.isArray(t)) {
       const a = new Set(t.flat(1 / 0).reverse());
-      for (const r of a) i.unshift(pe(r));
-    } else t !== void 0 && i.push(pe(t));
+      for (const r of a) i.unshift(fe(r));
+    } else t !== void 0 && i.push(fe(t));
     return i;
   }
   static _$Eu(t, i) {
@@ -156,7 +156,7 @@ let k = class extends HTMLElement {
   }
   createRenderRoot() {
     const t = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return Ae(t, this.constructor.elementStyles), t;
+    return He(t, this.constructor.elementStyles), t;
   }
   connectedCallback() {
     this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(!0), this._$EO?.forEach((t) => t.hostConnected?.());
@@ -172,23 +172,23 @@ let k = class extends HTMLElement {
   _$ET(t, i) {
     const a = this.constructor.elementProperties.get(t), r = this.constructor._$Eu(t, a);
     if (r !== void 0 && a.reflect === !0) {
-      const s = (a.converter?.toAttribute !== void 0 ? a.converter : V).toAttribute(i, a.type);
+      const s = (a.converter?.toAttribute !== void 0 ? a.converter : G).toAttribute(i, a.type);
       this._$Em = t, s == null ? this.removeAttribute(r) : this.setAttribute(r, s), this._$Em = null;
     }
   }
   _$AK(t, i) {
     const a = this.constructor, r = a._$Eh.get(t);
     if (r !== void 0 && this._$Em !== r) {
-      const s = a.getPropertyOptions(r), n = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : V;
+      const s = a.getPropertyOptions(r), n = typeof s.converter == "function" ? { fromAttribute: s.converter } : s.converter?.fromAttribute !== void 0 ? s.converter : G;
       this._$Em = r;
-      const m = n.fromAttribute(i, s.type);
-      this[r] = m ?? this._$Ej?.get(r) ?? m, this._$Em = null;
+      const d = n.fromAttribute(i, s.type);
+      this[r] = d ?? this._$Ej?.get(r) ?? d, this._$Em = null;
     }
   }
   requestUpdate(t, i, a, r = !1, s) {
     if (t !== void 0) {
       const n = this.constructor;
-      if (r === !1 && (s = this[t]), a ??= n.getPropertyOptions(t), !((a.hasChanged ?? re)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(t) && !this.hasAttribute(n._$Eu(t, a)))) return;
+      if (r === !1 && (s = this[t]), a ??= n.getPropertyOptions(t), !((a.hasChanged ?? ce)(s, i) || a.useDefault && a.reflect && s === this._$Ej?.get(t) && !this.hasAttribute(n._$Eu(t, a)))) return;
       this.C(t, i, a);
     }
     this.isUpdatePending === !1 && (this._$ES = this._$EP());
@@ -218,8 +218,8 @@ let k = class extends HTMLElement {
       }
       const a = this.constructor.elementProperties;
       if (a.size > 0) for (const [r, s] of a) {
-        const { wrapped: n } = s, m = this[r];
-        n !== !0 || this._$AL.has(r) || m === void 0 || this.C(r, void 0, s, m);
+        const { wrapped: n } = s, d = this[r];
+        n !== !0 || this._$AL.has(r) || d === void 0 || this.C(r, void 0, s, d);
       }
     }
     let t = !1;
@@ -256,75 +256,75 @@ let k = class extends HTMLElement {
   firstUpdated(t) {
   }
 };
-k.elementStyles = [], k.shadowRootOptions = { mode: "open" }, k[O("elementProperties")] = /* @__PURE__ */ new Map(), k[O("finalized")] = /* @__PURE__ */ new Map(), Fe?.({ ReactiveElement: k }), (Y.reactiveElementVersions ??= []).push("2.1.2");
+C.elementStyles = [], C.shadowRootOptions = { mode: "open" }, C[H("elementProperties")] = /* @__PURE__ */ new Map(), C[H("finalized")] = /* @__PURE__ */ new Map(), Ge?.({ ReactiveElement: C }), (J.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const se = globalThis, ue = (e) => e, W = se.trustedTypes, me = W ? W.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, we = "$lit$", S = `lit$${Math.random().toFixed(9).slice(2)}$`, Se = "?" + S, He = `<${Se}>`, D = document, z = () => D.createComment(""), F = (e) => e === null || typeof e != "object" && typeof e != "function", ne = Array.isArray, je = (e) => ne(e) || typeof e?.[Symbol.iterator] == "function", X = `[ 	
-\f\r]`, C = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ge = /-->/g, fe = />/g, R = RegExp(`>|${X}(?:([^\\s"'>=/]+)(${X}*=${X}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ye = /'/g, ve = /"/g, _e = /^(?:script|style|textarea|title)$/i, Be = (e) => (t, ...i) => ({ _$litType$: e, strings: t, values: i }), l = Be(1), I = Symbol.for("lit-noChange"), h = Symbol.for("lit-nothing"), xe = /* @__PURE__ */ new WeakMap(), T = D.createTreeWalker(D, 129);
-function Re(e, t) {
-  if (!ne(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-  return me !== void 0 ? me.createHTML(t) : t;
+const pe = globalThis, $e = (e) => e, X = pe.trustedTypes, xe = X ? X.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, Ie = "$lit$", R = `lit$${Math.random().toFixed(9).slice(2)}$`, Ee = "?" + R, Xe = `<${Ee}>`, k = document, q = () => k.createComment(""), K = (e) => e === null || typeof e != "object" && typeof e != "function", de = Array.isArray, Je = (e) => de(e) || typeof e?.[Symbol.iterator] == "function", ee = `[ 	
+\f\r]`, N = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, be = /-->/g, we = />/g, D = RegExp(`>|${ee}(?:([^\\s"'>=/]+)(${ee}*=${ee}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Se = /'/g, _e = /"/g, Ce = /^(?:script|style|textarea|title)$/i, Ze = (e) => (t, ...i) => ({ _$litType$: e, strings: t, values: i }), c = Ze(1), I = Symbol.for("lit-noChange"), g = Symbol.for("lit-nothing"), Re = /* @__PURE__ */ new WeakMap(), A = k.createTreeWalker(k, 129);
+function Pe(e, t) {
+  if (!de(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return xe !== void 0 ? xe.createHTML(t) : t;
 }
-const qe = (e, t) => {
+const Qe = (e, t) => {
   const i = e.length - 1, a = [];
-  let r, s = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", n = C;
-  for (let m = 0; m < i; m++) {
-    const u = e[m];
-    let y, x, g = -1, b = 0;
-    for (; b < u.length && (n.lastIndex = b, x = n.exec(u), x !== null); ) b = n.lastIndex, n === C ? x[1] === "!--" ? n = ge : x[1] !== void 0 ? n = fe : x[2] !== void 0 ? (_e.test(x[2]) && (r = RegExp("</" + x[2], "g")), n = R) : x[3] !== void 0 && (n = R) : n === R ? x[0] === ">" ? (n = r ?? C, g = -1) : x[1] === void 0 ? g = -2 : (g = n.lastIndex - x[2].length, y = x[1], n = x[3] === void 0 ? R : x[3] === '"' ? ve : ye) : n === ve || n === ye ? n = R : n === ge || n === fe ? n = C : (n = R, r = void 0);
-    const w = n === R && e[m + 1].startsWith("/>") ? " " : "";
-    s += n === C ? u + He : g >= 0 ? (a.push(y), u.slice(0, g) + we + u.slice(g) + S + w) : u + S + (g === -2 ? m : w);
+  let r, s = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", n = N;
+  for (let d = 0; d < i; d++) {
+    const l = e[d];
+    let y, x, m = -1, v = 0;
+    for (; v < l.length && (n.lastIndex = v, x = n.exec(l), x !== null); ) v = n.lastIndex, n === N ? x[1] === "!--" ? n = be : x[1] !== void 0 ? n = we : x[2] !== void 0 ? (Ce.test(x[2]) && (r = RegExp("</" + x[2], "g")), n = D) : x[3] !== void 0 && (n = D) : n === D ? x[0] === ">" ? (n = r ?? N, m = -1) : x[1] === void 0 ? m = -2 : (m = n.lastIndex - x[2].length, y = x[1], n = x[3] === void 0 ? D : x[3] === '"' ? _e : Se) : n === _e || n === Se ? n = D : n === be || n === we ? n = N : (n = D, r = void 0);
+    const f = n === D && e[d + 1].startsWith("/>") ? " " : "";
+    s += n === N ? l + Xe : m >= 0 ? (a.push(y), l.slice(0, m) + Ie + l.slice(m) + R + f) : l + R + (m === -2 ? d : f);
   }
-  return [Re(e, s + (e[i] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), a];
+  return [Pe(e, s + (e[i] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), a];
 };
-class H {
+class V {
   constructor({ strings: t, _$litType$: i }, a) {
     let r;
     this.parts = [];
     let s = 0, n = 0;
-    const m = t.length - 1, u = this.parts, [y, x] = qe(t, i);
-    if (this.el = H.createElement(y, a), T.currentNode = this.el.content, i === 2 || i === 3) {
-      const g = this.el.content.firstChild;
-      g.replaceWith(...g.childNodes);
+    const d = t.length - 1, l = this.parts, [y, x] = Qe(t, i);
+    if (this.el = V.createElement(y, a), A.currentNode = this.el.content, i === 2 || i === 3) {
+      const m = this.el.content.firstChild;
+      m.replaceWith(...m.childNodes);
     }
-    for (; (r = T.nextNode()) !== null && u.length < m; ) {
+    for (; (r = A.nextNode()) !== null && l.length < d; ) {
       if (r.nodeType === 1) {
-        if (r.hasAttributes()) for (const g of r.getAttributeNames()) if (g.endsWith(we)) {
-          const b = x[n++], w = r.getAttribute(g).split(S), B = /([.?@])?(.*)/.exec(b);
-          u.push({ type: 1, index: s, name: B[2], strings: w, ctor: B[1] === "." ? Ve : B[1] === "?" ? We : B[1] === "@" ? Ye : G }), r.removeAttribute(g);
-        } else g.startsWith(S) && (u.push({ type: 6, index: s }), r.removeAttribute(g));
-        if (_e.test(r.tagName)) {
-          const g = r.textContent.split(S), b = g.length - 1;
-          if (b > 0) {
-            r.textContent = W ? W.emptyScript : "";
-            for (let w = 0; w < b; w++) r.append(g[w], z()), T.nextNode(), u.push({ type: 2, index: ++s });
-            r.append(g[b], z());
+        if (r.hasAttributes()) for (const m of r.getAttributeNames()) if (m.endsWith(Ie)) {
+          const v = x[n++], f = r.getAttribute(m).split(R), b = /([.?@])?(.*)/.exec(v);
+          l.push({ type: 1, index: s, name: b[2], strings: f, ctor: b[1] === "." ? tt : b[1] === "?" ? it : b[1] === "@" ? at : Z }), r.removeAttribute(m);
+        } else m.startsWith(R) && (l.push({ type: 6, index: s }), r.removeAttribute(m));
+        if (Ce.test(r.tagName)) {
+          const m = r.textContent.split(R), v = m.length - 1;
+          if (v > 0) {
+            r.textContent = X ? X.emptyScript : "";
+            for (let f = 0; f < v; f++) r.append(m[f], q()), A.nextNode(), l.push({ type: 2, index: ++s });
+            r.append(m[v], q());
           }
         }
-      } else if (r.nodeType === 8) if (r.data === Se) u.push({ type: 2, index: s });
+      } else if (r.nodeType === 8) if (r.data === Ee) l.push({ type: 2, index: s });
       else {
-        let g = -1;
-        for (; (g = r.data.indexOf(S, g + 1)) !== -1; ) u.push({ type: 7, index: s }), g += S.length - 1;
+        let m = -1;
+        for (; (m = r.data.indexOf(R, m + 1)) !== -1; ) l.push({ type: 7, index: s }), m += R.length - 1;
       }
       s++;
     }
   }
   static createElement(t, i) {
-    const a = D.createElement("template");
+    const a = k.createElement("template");
     return a.innerHTML = t, a;
   }
 }
-function A(e, t, i = e, a) {
+function L(e, t, i = e, a) {
   if (t === I) return t;
   let r = a !== void 0 ? i._$Co?.[a] : i._$Cl;
-  const s = F(t) ? void 0 : t._$litDirective$;
-  return r?.constructor !== s && (r?._$AO?.(!1), s === void 0 ? r = void 0 : (r = new s(e), r._$AT(e, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = r : i._$Cl = r), r !== void 0 && (t = A(e, r._$AS(e, t.values), r, a)), t;
+  const s = K(t) ? void 0 : t._$litDirective$;
+  return r?.constructor !== s && (r?._$AO?.(!1), s === void 0 ? r = void 0 : (r = new s(e), r._$AT(e, i, a)), a !== void 0 ? (i._$Co ??= [])[a] = r : i._$Cl = r), r !== void 0 && (t = L(e, r._$AS(e, t.values), r, a)), t;
 }
-class Ke {
+class et {
   constructor(t, i) {
     this._$AV = [], this._$AN = void 0, this._$AD = t, this._$AM = i;
   }
@@ -335,29 +335,29 @@ class Ke {
     return this._$AM._$AU;
   }
   u(t) {
-    const { el: { content: i }, parts: a } = this._$AD, r = (t?.creationScope ?? D).importNode(i, !0);
-    T.currentNode = r;
-    let s = T.nextNode(), n = 0, m = 0, u = a[0];
-    for (; u !== void 0; ) {
-      if (n === u.index) {
+    const { el: { content: i }, parts: a } = this._$AD, r = (t?.creationScope ?? k).importNode(i, !0);
+    A.currentNode = r;
+    let s = A.nextNode(), n = 0, d = 0, l = a[0];
+    for (; l !== void 0; ) {
+      if (n === l.index) {
         let y;
-        u.type === 2 ? y = new j(s, s.nextSibling, this, t) : u.type === 1 ? y = new u.ctor(s, u.name, u.strings, this, t) : u.type === 6 && (y = new Ge(s, this, t)), this._$AV.push(y), u = a[++m];
+        l.type === 2 ? y = new O(s, s.nextSibling, this, t) : l.type === 1 ? y = new l.ctor(s, l.name, l.strings, this, t) : l.type === 6 && (y = new rt(s, this, t)), this._$AV.push(y), l = a[++d];
       }
-      n !== u?.index && (s = T.nextNode(), n++);
+      n !== l?.index && (s = A.nextNode(), n++);
     }
-    return T.currentNode = D, r;
+    return A.currentNode = k, r;
   }
   p(t) {
     let i = 0;
     for (const a of this._$AV) a !== void 0 && (a.strings !== void 0 ? (a._$AI(t, a, i), i += a.strings.length - 2) : a._$AI(t[i])), i++;
   }
 }
-class j {
+class O {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
   constructor(t, i, a, r) {
-    this.type = 2, this._$AH = h, this._$AN = void 0, this._$AA = t, this._$AB = i, this._$AM = a, this.options = r, this._$Cv = r?.isConnected ?? !0;
+    this.type = 2, this._$AH = g, this._$AN = void 0, this._$AA = t, this._$AB = i, this._$AM = a, this.options = r, this._$Cv = r?.isConnected ?? !0;
   }
   get parentNode() {
     let t = this._$AA.parentNode;
@@ -371,7 +371,7 @@ class j {
     return this._$AB;
   }
   _$AI(t, i = this) {
-    t = A(this, t, i), F(t) ? t === h || t == null || t === "" ? (this._$AH !== h && this._$AR(), this._$AH = h) : t !== this._$AH && t !== I && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : je(t) ? this.k(t) : this._(t);
+    t = L(this, t, i), K(t) ? t === g || t == null || t === "" ? (this._$AH !== g && this._$AR(), this._$AH = g) : t !== this._$AH && t !== I && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Je(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -380,38 +380,38 @@ class j {
     this._$AH !== t && (this._$AR(), this._$AH = this.O(t));
   }
   _(t) {
-    this._$AH !== h && F(this._$AH) ? this._$AA.nextSibling.data = t : this.T(D.createTextNode(t)), this._$AH = t;
+    this._$AH !== g && K(this._$AH) ? this._$AA.nextSibling.data = t : this.T(k.createTextNode(t)), this._$AH = t;
   }
   $(t) {
-    const { values: i, _$litType$: a } = t, r = typeof a == "number" ? this._$AC(t) : (a.el === void 0 && (a.el = H.createElement(Re(a.h, a.h[0]), this.options)), a);
+    const { values: i, _$litType$: a } = t, r = typeof a == "number" ? this._$AC(t) : (a.el === void 0 && (a.el = V.createElement(Pe(a.h, a.h[0]), this.options)), a);
     if (this._$AH?._$AD === r) this._$AH.p(i);
     else {
-      const s = new Ke(r, this), n = s.u(this.options);
+      const s = new et(r, this), n = s.u(this.options);
       s.p(i), this.T(n), this._$AH = s;
     }
   }
   _$AC(t) {
-    let i = xe.get(t.strings);
-    return i === void 0 && xe.set(t.strings, i = new H(t)), i;
+    let i = Re.get(t.strings);
+    return i === void 0 && Re.set(t.strings, i = new V(t)), i;
   }
   k(t) {
-    ne(this._$AH) || (this._$AH = [], this._$AR());
+    de(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let a, r = 0;
-    for (const s of t) r === i.length ? i.push(a = new j(this.O(z()), this.O(z()), this, this.options)) : a = i[r], a._$AI(s), r++;
+    for (const s of t) r === i.length ? i.push(a = new O(this.O(q()), this.O(q()), this, this.options)) : a = i[r], a._$AI(s), r++;
     r < i.length && (this._$AR(a && a._$AB.nextSibling, r), i.length = r);
   }
   _$AR(t = this._$AA.nextSibling, i) {
     for (this._$AP?.(!1, !0, i); t !== this._$AB; ) {
-      const a = ue(t).nextSibling;
-      ue(t).remove(), t = a;
+      const a = $e(t).nextSibling;
+      $e(t).remove(), t = a;
     }
   }
   setConnected(t) {
     this._$AM === void 0 && (this._$Cv = t, this._$AP?.(t));
   }
 }
-class G {
+class Z {
   get tagName() {
     return this.element.tagName;
   }
@@ -419,53 +419,53 @@ class G {
     return this._$AM._$AU;
   }
   constructor(t, i, a, r, s) {
-    this.type = 1, this._$AH = h, this._$AN = void 0, this.element = t, this.name = i, this._$AM = r, this.options = s, a.length > 2 || a[0] !== "" || a[1] !== "" ? (this._$AH = Array(a.length - 1).fill(new String()), this.strings = a) : this._$AH = h;
+    this.type = 1, this._$AH = g, this._$AN = void 0, this.element = t, this.name = i, this._$AM = r, this.options = s, a.length > 2 || a[0] !== "" || a[1] !== "" ? (this._$AH = Array(a.length - 1).fill(new String()), this.strings = a) : this._$AH = g;
   }
   _$AI(t, i = this, a, r) {
     const s = this.strings;
     let n = !1;
-    if (s === void 0) t = A(this, t, i, 0), n = !F(t) || t !== this._$AH && t !== I, n && (this._$AH = t);
+    if (s === void 0) t = L(this, t, i, 0), n = !K(t) || t !== this._$AH && t !== I, n && (this._$AH = t);
     else {
-      const m = t;
-      let u, y;
-      for (t = s[0], u = 0; u < s.length - 1; u++) y = A(this, m[a + u], i, u), y === I && (y = this._$AH[u]), n ||= !F(y) || y !== this._$AH[u], y === h ? t = h : t !== h && (t += (y ?? "") + s[u + 1]), this._$AH[u] = y;
+      const d = t;
+      let l, y;
+      for (t = s[0], l = 0; l < s.length - 1; l++) y = L(this, d[a + l], i, l), y === I && (y = this._$AH[l]), n ||= !K(y) || y !== this._$AH[l], y === g ? t = g : t !== g && (t += (y ?? "") + s[l + 1]), this._$AH[l] = y;
     }
     n && !r && this.j(t);
   }
   j(t) {
-    t === h ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t ?? "");
+    t === g ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t ?? "");
   }
 }
-class Ve extends G {
+class tt extends Z {
   constructor() {
     super(...arguments), this.type = 3;
   }
   j(t) {
-    this.element[this.name] = t === h ? void 0 : t;
+    this.element[this.name] = t === g ? void 0 : t;
   }
 }
-class We extends G {
+class it extends Z {
   constructor() {
     super(...arguments), this.type = 4;
   }
   j(t) {
-    this.element.toggleAttribute(this.name, !!t && t !== h);
+    this.element.toggleAttribute(this.name, !!t && t !== g);
   }
 }
-class Ye extends G {
+class at extends Z {
   constructor(t, i, a, r, s) {
     super(t, i, a, r, s), this.type = 5;
   }
   _$AI(t, i = this) {
-    if ((t = A(this, t, i, 0) ?? h) === I) return;
-    const a = this._$AH, r = t === h && a !== h || t.capture !== a.capture || t.once !== a.once || t.passive !== a.passive, s = t !== h && (a === h || r);
+    if ((t = L(this, t, i, 0) ?? g) === I) return;
+    const a = this._$AH, r = t === g && a !== g || t.capture !== a.capture || t.once !== a.once || t.passive !== a.passive, s = t !== g && (a === g || r);
     r && this.element.removeEventListener(this.name, this, a), s && this.element.addEventListener(this.name, this, t), this._$AH = t;
   }
   handleEvent(t) {
     typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, t) : this._$AH.handleEvent(t);
   }
 }
-class Ge {
+class rt {
   constructor(t, i, a) {
     this.element = t, this.type = 6, this._$AN = void 0, this._$AM = i, this.options = a;
   }
@@ -473,17 +473,17 @@ class Ge {
     return this._$AM._$AU;
   }
   _$AI(t) {
-    A(this, t);
+    L(this, t);
   }
 }
-const Xe = se.litHtmlPolyfillSupport;
-Xe?.(H, j), (se.litHtmlVersions ??= []).push("3.3.3");
-const Je = (e, t, i) => {
+const st = { I: O }, nt = pe.litHtmlPolyfillSupport;
+nt?.(V, O), (pe.litHtmlVersions ??= []).push("3.3.3");
+const ot = (e, t, i) => {
   const a = i?.renderBefore ?? t;
   let r = a._$litPart$;
   if (r === void 0) {
     const s = i?.renderBefore ?? null;
-    a._$litPart$ = r = new j(t.insertBefore(z(), s), s, void 0, i ?? {});
+    a._$litPart$ = r = new O(t.insertBefore(q(), s), s, void 0, i ?? {});
   }
   return r._$AI(e), r;
 };
@@ -492,8 +492,8 @@ const Je = (e, t, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const oe = globalThis;
-class N extends k {
+const he = globalThis;
+let j = class extends C {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -503,7 +503,7 @@ class N extends k {
   }
   update(t) {
     const i = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = Je(i, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = ot(i, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -514,17 +514,17 @@ class N extends k {
   render() {
     return I;
   }
-}
-N._$litElement$ = !0, N.finalized = !0, oe.litElementHydrateSupport?.({ LitElement: N });
-const Ze = oe.litElementPolyfillSupport;
-Ze?.({ LitElement: N });
-(oe.litElementVersions ??= []).push("4.2.2");
+};
+j._$litElement$ = !0, j.finalized = !0, he.litElementHydrateSupport?.({ LitElement: j });
+const lt = he.litElementPolyfillSupport;
+lt?.({ LitElement: j });
+(he.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const Qe = (e) => (t, i) => {
+const ct = (e) => (t, i) => {
   i !== void 0 ? i.addInitializer(() => {
     customElements.define(e, t);
   }) : customElements.define(e, t);
@@ -534,29 +534,29 @@ const Qe = (e) => (t, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const et = { attribute: !0, type: String, converter: V, reflect: !1, hasChanged: re }, tt = (e = et, t, i) => {
+const pt = { attribute: !0, type: String, converter: G, reflect: !1, hasChanged: ce }, dt = (e = pt, t, i) => {
   const { kind: a, metadata: r } = i;
   let s = globalThis.litPropertyMetadata.get(r);
   if (s === void 0 && globalThis.litPropertyMetadata.set(r, s = /* @__PURE__ */ new Map()), a === "setter" && ((e = Object.create(e)).wrapped = !0), s.set(i.name, e), a === "accessor") {
     const { name: n } = i;
-    return { set(m) {
-      const u = t.get.call(this);
-      t.set.call(this, m), this.requestUpdate(n, u, e, !0, m);
-    }, init(m) {
-      return m !== void 0 && this.C(n, void 0, e, m), m;
+    return { set(d) {
+      const l = t.get.call(this);
+      t.set.call(this, d), this.requestUpdate(n, l, e, !0, d);
+    }, init(d) {
+      return d !== void 0 && this.C(n, void 0, e, d), d;
     } };
   }
   if (a === "setter") {
     const { name: n } = i;
-    return function(m) {
-      const u = this[n];
-      t.call(this, m), this.requestUpdate(n, u, e, !0, m);
+    return function(d) {
+      const l = this[n];
+      t.call(this, d), this.requestUpdate(n, l, e, !0, d);
     };
   }
   throw Error("Unsupported decorator location: " + a);
 };
-function Te(e) {
-  return (t, i) => typeof i == "object" ? tt(e, t, i) : ((a, r, s) => {
+function Le(e) {
+  return (t, i) => typeof i == "object" ? dt(e, t, i) : ((a, r, s) => {
     const n = r.hasOwnProperty(s);
     return r.constructor.createProperty(s, a), n ? Object.getOwnPropertyDescriptor(r, s) : void 0;
   })(e, t, i);
@@ -566,15 +566,120 @@ function Te(e) {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-function d(e) {
-  return Te({ ...e, state: !0, attribute: !1 });
+function u(e) {
+  return Le({ ...e, state: !0, attribute: !1 });
 }
-var it = Object.defineProperty, at = Object.getOwnPropertyDescriptor, p = (e, t, i, a) => {
-  for (var r = a > 1 ? void 0 : a ? at(t, i) : t, s = e.length - 1, n; s >= 0; s--)
-    (n = e[s]) && (r = (a ? n(t, i, r) : n(r)) || r);
-  return a && r && it(t, i, r), r;
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const ht = { CHILD: 2 }, ut = (e) => (...t) => ({ _$litDirective$: e, values: t });
+let mt = class {
+  constructor(t) {
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AT(t, i, a) {
+    this._$Ct = t, this._$AM = i, this._$Ci = a;
+  }
+  _$AS(t, i) {
+    return this.update(t, i);
+  }
+  update(t, i) {
+    return this.render(...i);
+  }
 };
-const L = ["breakfast", "lunch", "dinner"], rt = ["Leftovers:", "Eat Out:", "Freezer Meal:", "Kids:"], st = "family-mealie-planner-card:draft:v2", nt = /* @__PURE__ */ new Set([
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const { I: gt } = st, Te = (e) => e, De = () => document.createComment(""), U = (e, t, i) => {
+  const a = e._$AA.parentNode, r = t === void 0 ? e._$AB : t._$AA;
+  if (i === void 0) {
+    const s = a.insertBefore(De(), r), n = a.insertBefore(De(), r);
+    i = new gt(s, n, e, e.options);
+  } else {
+    const s = i._$AB.nextSibling, n = i._$AM, d = n !== e;
+    if (d) {
+      let l;
+      i._$AQ?.(e), i._$AM = e, i._$AP !== void 0 && (l = e._$AU) !== n._$AU && i._$AP(l);
+    }
+    if (s !== r || d) {
+      let l = i._$AA;
+      for (; l !== s; ) {
+        const y = Te(l).nextSibling;
+        Te(a).insertBefore(l, r), l = y;
+      }
+    }
+  }
+  return i;
+}, M = (e, t, i = e) => (e._$AI(t, i), e), ft = {}, yt = (e, t = ft) => e._$AH = t, vt = (e) => e._$AH, te = (e) => {
+  e._$AR(), e._$AA.remove();
+};
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const Me = (e, t, i) => {
+  const a = /* @__PURE__ */ new Map();
+  for (let r = t; r <= i; r++) a.set(e[r], r);
+  return a;
+}, $t = ut(class extends mt {
+  constructor(e) {
+    if (super(e), e.type !== ht.CHILD) throw Error("repeat() can only be used in text expressions");
+  }
+  dt(e, t, i) {
+    let a;
+    i === void 0 ? i = t : t !== void 0 && (a = t);
+    const r = [], s = [];
+    let n = 0;
+    for (const d of e) r[n] = a ? a(d, n) : n, s[n] = i(d, n), n++;
+    return { values: s, keys: r };
+  }
+  render(e, t, i) {
+    return this.dt(e, t, i).values;
+  }
+  update(e, [t, i, a]) {
+    const r = vt(e), { values: s, keys: n } = this.dt(t, i, a);
+    if (!Array.isArray(r)) return this.ut = n, s;
+    const d = this.ut ??= [], l = [];
+    let y, x, m = 0, v = r.length - 1, f = 0, b = s.length - 1;
+    for (; m <= v && f <= b; ) if (r[m] === null) m++;
+    else if (r[v] === null) v--;
+    else if (d[m] === n[f]) l[f] = M(r[m], s[f]), m++, f++;
+    else if (d[v] === n[b]) l[b] = M(r[v], s[b]), v--, b--;
+    else if (d[m] === n[b]) l[b] = M(r[m], s[b]), U(e, l[b + 1], r[m]), m++, b--;
+    else if (d[v] === n[f]) l[f] = M(r[v], s[f]), U(e, r[m], r[v]), v--, f++;
+    else if (y === void 0 && (y = Me(n, f, b), x = Me(d, m, v)), y.has(d[m])) if (y.has(d[v])) {
+      const _ = x.get(n[f]), Q = _ !== void 0 ? r[_] : null;
+      if (Q === null) {
+        const me = U(e, r[m]);
+        M(me, s[f]), l[f] = me;
+      } else l[f] = M(Q, s[f]), U(e, r[m], Q), r[_] = null;
+      f++;
+    } else te(r[v]), v--;
+    else te(r[m]), m++;
+    for (; f <= b; ) {
+      const _ = U(e, l[b + 1]);
+      M(_, s[f]), l[f++] = _;
+    }
+    for (; m <= v; ) {
+      const _ = r[m++];
+      _ !== null && te(_);
+    }
+    return this.ut = n, yt(e, l), I;
+  }
+});
+var xt = Object.defineProperty, bt = Object.getOwnPropertyDescriptor, h = (e, t, i, a) => {
+  for (var r = a > 1 ? void 0 : a ? bt(t, i) : t, s = e.length - 1, n; s >= 0; s--)
+    (n = e[s]) && (r = (a ? n(t, i, r) : n(r)) || r);
+  return a && r && xt(t, i, r), r;
+};
+const F = ["breakfast", "lunch", "dinner"], wt = ["Leftovers:", "Eat Out:", "Freezer Meal:", "Kids:"], St = "family-mealie-planner-card:draft:v2", _t = /* @__PURE__ */ new Set([
   "view",
   "plannerOffsetDays",
   "search",
@@ -597,15 +702,15 @@ const L = ["breakfast", "lunch", "dinner"], rt = ["Leftovers:", "Eat Out:", "Fre
   "noteTitle",
   "noteText"
 ]);
-let c = class extends N {
+let p = class extends j {
   constructor() {
     super(...arguments), this.config = { type: "custom:family-mealie-planner-card" }, this.view = "planner", this.recipes = [], this.mealPlan = [], this.shoppingLists = [], this.loading = !1, this.addDialogOpen = !1, this.recipeDialogOpen = !1, this.mealEditDate = "", this.mealEditEntryType = "", this.mealSaving = !1, this.recipeLoading = !1, this.search = "", this.noteTitle = "", this.noteText = "", this.noteEditTitle = "", this.noteEditText = "", this.plannerOffsetDays = 0, this.recipeCreateOpen = !1, this.recipeCreateMode = "url", this.recipeUrl = "", this.manualRecipeName = "", this.manualRecipeSource = "", this.manualRecipeDescription = "", this.manualRecipeServings = "", this.manualRecipePrep = "", this.manualRecipeCook = "", this.manualRecipeTotal = "", this.manualRecipeIngredients = "", this.manualRecipeInstructions = "", this.manualRecipeNotes = "", this.manualParseIngredients = !0, this.recipeSaving = !1, this.groceryText = "", this.newListName = "", this.draftRestored = !1, this.suppressMealClickUntil = 0, this.resetPlannerRange = async () => {
       this.plannerOffsetDays = 0, await this.reloadPlannerRange();
     }, this.toggleRecipeCreate = () => {
       this.recipeCreateOpen = !this.recipeCreateOpen, this.recipeCreateOpen && (this.recipeMessage = void 0);
     }, this.openDefaultAddDialog = () => {
-      const e = this.daysToShow()[0] ?? K(/* @__PURE__ */ new Date()), t = this.entryTypes()[0] ?? L[0];
-      this.openAddDialog({ date: M(e), entryType: t });
+      const e = this.daysToShow()[0] ?? Y(/* @__PURE__ */ new Date()), t = this.entryTypes()[0] ?? F[0];
+      this.openAddDialog({ date: E(e), entryType: t });
     }, this.planRecipeFromDialog = () => {
       const e = this.recipeDetail ?? this.selectedRecipeForDialog;
       e?.id && (this.closeRecipeDialog(), this.selectedMeal = void 0, this.selectedRecipeForDialog = void 0, this.recipeDetail = void 0, this.openAddDialog(this.defaultRecipePlanSlot(), e));
@@ -614,9 +719,9 @@ let c = class extends N {
     }, this.closeRecipeDialog = () => {
       this.recipeDialogOpen = !1, this.mealSaving = !1;
     }, this.onMealEditDateInput = (e) => {
-      this.mealEditDate = f(e);
+      this.mealEditDate = $(e);
     }, this.onMealEditEntryTypeInput = (e) => {
-      this.mealEditEntryType = this.canonicalEntryType(f(e));
+      this.mealEditEntryType = this.canonicalEntryType($(e));
     }, this.moveMealPointer = (e) => {
       const t = this.pointerDrag;
       if (!t || t.pointerId !== e.pointerId) return;
@@ -648,7 +753,7 @@ let c = class extends N {
     this.config = {
       title: "Meals",
       days: 7,
-      entry_types: L,
+      entry_types: F,
       result_limit: 300,
       refresh_minutes: 15,
       ...e
@@ -664,13 +769,13 @@ let c = class extends N {
     this.refreshAll();
   }
   updated(e) {
-    e.has("hass") && this.hass && this.recipes.length === 0 && this.mealPlan.length === 0 && this.refreshAll(), (e.has("addDialogOpen") || e.has("recipeDialogOpen") || e.has("mealEditEntryType") || e.has("selectedMeal") || e.has("selectedSlot")) && (this.syncNativeDialogs(), this.syncNativeSelects()), [...e.keys()].some((t) => nt.has(String(t))) && this.scheduleDraftSave();
+    e.has("hass") && this.hass && this.recipes.length === 0 && this.mealPlan.length === 0 && this.refreshAll(), (e.has("addDialogOpen") || e.has("recipeDialogOpen") || e.has("mealEditEntryType") || e.has("selectedMeal") || e.has("selectedSlot")) && (this.syncNativeDialogs(), this.syncNativeSelects()), [...e.keys()].some((t) => _t.has(String(t))) && this.scheduleDraftSave();
   }
   getCardSize() {
     return 8;
   }
   render() {
-    return l`
+    return c`
       <ha-card>
         <section class="shell">
           <header class="topbar">
@@ -681,12 +786,12 @@ let c = class extends N {
               <p>${this.subtitle()}</p>
             </div>
             <div class="top-actions">
-              ${this.view === "planner" ? l`
+              ${this.view === "planner" ? c`
                     <button class="secondary action add-button" @click=${this.openDefaultAddDialog}>
                       <ha-icon icon="mdi:plus"></ha-icon>
                       <span>Add meal</span>
                     </button>
-                  ` : h}
+                  ` : g}
               <button class="icon-button refresh-button" title="Refresh" @click=${this.refreshAll} ?disabled=${this.loading}>
                 <ha-icon class=${this.loading ? "spin" : ""} icon=${this.loading ? "mdi:loading" : "mdi:refresh"}></ha-icon>
               </button>
@@ -699,10 +804,10 @@ let c = class extends N {
             ${this.renderTab("groceries", "Groceries", "mdi:cart-outline")}
           </nav>
 
-          ${this.error ? l`<div class="notice error"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${this.error}</div>` : h}
-          ${this.view === "planner" ? this.renderPlanner() : h}
-          ${this.view === "recipes" ? this.renderRecipes() : h}
-          ${this.view === "groceries" ? this.renderGroceries() : h}
+          ${this.error ? c`<div class="notice error"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${this.error}</div>` : g}
+          ${this.view === "planner" ? this.renderPlanner() : g}
+          ${this.view === "recipes" ? this.renderRecipes() : g}
+          ${this.view === "groceries" ? this.renderGroceries() : g}
         </section>
       </ha-card>
 
@@ -710,7 +815,7 @@ let c = class extends N {
     `;
   }
   renderTab(e, t, i) {
-    return l`
+    return c`
       <button class=${this.view === e ? "active" : ""} @click=${() => this.openView(e)}>
         <ha-icon icon=${i}></ha-icon>
         <span>${t}</span>
@@ -719,7 +824,7 @@ let c = class extends N {
   }
   renderPlanner() {
     const e = this.daysToShow();
-    return l`
+    return c`
       <div class="planner-nav">
         <button class="plain" @click=${() => this.shiftPlannerRange(-this.rangeStepDays())}>Previous week</button>
         <button class="plain" @click=${this.resetPlannerRange} ?disabled=${this.plannerOffsetDays === 0}>This week</button>
@@ -731,8 +836,8 @@ let c = class extends N {
     `;
   }
   renderDay(e) {
-    const t = M(e), i = this.hasMealsForDay(t);
-    return l`
+    const t = E(e), i = this.hasMealsForDay(t);
+    return c`
       <article
         class="day"
         data-drop-date=${t}
@@ -745,14 +850,14 @@ let c = class extends N {
         </div>
         ${this.renderDropTargets(t)}
         <div class="meal-sections">
-          ${i ? this.entryTypes().map((a) => this.renderMealSection(e, a)) : l`<div class="empty-day">No meals planned</div>`}
+          ${i ? this.entryTypes().map((a) => this.renderMealSection(e, a)) : c`<div class="empty-day">No meals planned</div>`}
         </div>
       </article>
     `;
   }
   renderMealSection(e, t) {
-    const i = M(e), a = this.mealsFor(i, t);
-    return a.length ? l`
+    const i = E(e), a = this.mealsFor(i, t);
+    return a.length ? c`
       <section
         class="meal-section"
         data-drop-date=${i}
@@ -761,28 +866,28 @@ let c = class extends N {
         @drop=${(r) => this.dropMeal(r, i, t)}
       >
         <header>
-          <span>${P(t)}</span>
+          <span>${z(t)}</span>
         </header>
         <div class="meal-list">
           ${a.map((r) => this.renderMealCard(r))}
         </div>
       </section>
-    ` : h;
+    ` : g;
   }
   renderMealOption(e) {
-    return l`
+    return c`
       <button
         type="button"
         class=${this.selectedRecipeKey(e) === this.selectedRecipeKey(this.selectedRecipe) ? "selected" : ""}
         @click=${() => this.chooseRecipe(e)}
       >
-        ${e.image ? l`<img src=${e.image} alt="" loading="lazy" />` : l`<span class="thumb">${e.name.slice(0, 1)}</span>`}
+        ${e.image ? c`<img src=${e.image} alt="" loading="lazy" />` : c`<span class="thumb">${e.name.slice(0, 1)}</span>`}
         <span>${e.name}</span>
       </button>
     `;
   }
   renderMealCard(e) {
-    return l`
+    return c`
       <button
         class="meal-pill"
         draggable="false"
@@ -793,15 +898,15 @@ let c = class extends N {
         @click=${(t) => this.onMealCardClick(t, e)}
       >
         <strong>${e.title}</strong>
-        ${e.text && e.text !== e.title ? l`<small>${e.text}</small>` : h}
+        ${e.text && e.text !== e.title ? c`<small>${e.text}</small>` : g}
       </button>
     `;
   }
   renderDropTargets(e) {
-    return l`
+    return c`
       <div class="drop-targets">
         ${this.entryTypes().map(
-      (t) => l`
+      (t) => c`
             <button
               type="button"
               data-drop-date=${e}
@@ -809,7 +914,7 @@ let c = class extends N {
               @dragover=${this.onPlannerDragOver}
               @drop=${(i) => this.dropMeal(i, e, t)}
             >
-              ${P(t)}
+              ${z(t)}
             </button>
           `
     )}
@@ -818,7 +923,7 @@ let c = class extends N {
   }
   renderRecipes() {
     const e = this.filteredRecipes();
-    return l`
+    return c`
       <div class="recipe-toolbar">
         <label>
           Search recipes
@@ -826,7 +931,7 @@ let c = class extends N {
             type="search"
             placeholder="Pasta, tacos, soup..."
             .value=${this.search}
-            @input=${(t) => this.setSearch(f(t))}
+            @input=${(t) => this.setSearch($(t))}
           />
         </label>
         <button class="secondary" @click=${this.toggleRecipeCreate}>
@@ -835,7 +940,7 @@ let c = class extends N {
         </button>
       </div>
 
-      ${this.recipeCreateOpen ? l`
+      ${this.recipeCreateOpen ? c`
             <section class="recipe-create-panel">
               <header>
                 <h3>Add recipe</h3>
@@ -850,16 +955,16 @@ let c = class extends N {
                   </button>
                 </div>
               </header>
-              ${this.recipeMessage ? l`<div class="success"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.recipeMessage}</div>` : h}
+              ${this.recipeMessage ? c`<div class="success"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.recipeMessage}</div>` : g}
               ${this.recipeCreateMode === "url" ? this.renderRecipeUrlCreate() : this.renderRecipeManualCreate()}
             </section>
-          ` : this.recipeMessage ? l`<div class="success compact"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.recipeMessage}</div>` : h}
+          ` : this.recipeMessage ? c`<div class="success compact"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.recipeMessage}</div>` : g}
 
       <div class="recipe-grid">
         ${e.map(
-      (t) => l`
+      (t) => c`
             <button class="recipe-tile" @click=${() => this.openRecipeSummaryDialog(t)}>
-              ${t.image ? l`<img src=${t.image} alt="" loading="lazy" />` : l`<span class="thumb">${t.name.slice(0, 1)}</span>`}
+              ${t.image ? c`<img src=${t.image} alt="" loading="lazy" />` : c`<span class="thumb">${t.name.slice(0, 1)}</span>`}
               <span>${t.name}</span>
             </button>
           `
@@ -868,7 +973,7 @@ let c = class extends N {
     `;
   }
   renderRecipeUrlCreate() {
-    return l`
+    return c`
       <div class="recipe-url-row">
         <label>
           Recipe URL
@@ -876,7 +981,7 @@ let c = class extends N {
             type="url"
             placeholder="https://..."
             .value=${this.recipeUrl}
-            @input=${(e) => this.recipeUrl = f(e)}
+            @input=${(e) => this.recipeUrl = $(e)}
           />
         </label>
         <button class="primary" @click=${this.importRecipeUrl} ?disabled=${this.recipeSaving || !this.recipeUrl.trim()}>
@@ -887,7 +992,7 @@ let c = class extends N {
     `;
   }
   renderRecipeManualCreate() {
-    return l`
+    return c`
       <div class="manual-recipe-form">
         <label>
           Name
@@ -895,7 +1000,7 @@ let c = class extends N {
             type="text"
             placeholder="Chicken soup"
             .value=${this.manualRecipeName}
-            @input=${(e) => this.manualRecipeName = f(e)}
+            @input=${(e) => this.manualRecipeName = $(e)}
           />
         </label>
         <label>
@@ -904,14 +1009,14 @@ let c = class extends N {
             type="url"
             placeholder="https://..."
             .value=${this.manualRecipeSource}
-            @input=${(e) => this.manualRecipeSource = f(e)}
+            @input=${(e) => this.manualRecipeSource = $(e)}
           />
         </label>
         <label class="span-2">
           Description
           <textarea
             .value=${this.manualRecipeDescription}
-            @input=${(e) => this.manualRecipeDescription = f(e)}
+            @input=${(e) => this.manualRecipeDescription = $(e)}
           ></textarea>
         </label>
         <div class="time-grid span-2">
@@ -922,7 +1027,7 @@ let c = class extends N {
               min="0"
               inputmode="numeric"
               .value=${this.manualRecipeServings}
-              @input=${(e) => this.manualRecipeServings = f(e)}
+              @input=${(e) => this.manualRecipeServings = $(e)}
             />
           </label>
           <label>
@@ -931,7 +1036,7 @@ let c = class extends N {
               type="text"
               placeholder="15 min"
               .value=${this.manualRecipePrep}
-              @input=${(e) => this.manualRecipePrep = f(e)}
+              @input=${(e) => this.manualRecipePrep = $(e)}
             />
           </label>
           <label>
@@ -940,7 +1045,7 @@ let c = class extends N {
               type="text"
               placeholder="30 min"
               .value=${this.manualRecipeCook}
-              @input=${(e) => this.manualRecipeCook = f(e)}
+              @input=${(e) => this.manualRecipeCook = $(e)}
             />
           </label>
           <label>
@@ -949,7 +1054,7 @@ let c = class extends N {
               type="text"
               placeholder="45 min"
               .value=${this.manualRecipeTotal}
-              @input=${(e) => this.manualRecipeTotal = f(e)}
+              @input=${(e) => this.manualRecipeTotal = $(e)}
             />
           </label>
         </div>
@@ -958,7 +1063,7 @@ let c = class extends N {
           <textarea
             class="tall"
             .value=${this.manualRecipeIngredients}
-            @input=${(e) => this.manualRecipeIngredients = f(e)}
+            @input=${(e) => this.manualRecipeIngredients = $(e)}
           ></textarea>
         </label>
         <label>
@@ -966,14 +1071,14 @@ let c = class extends N {
           <textarea
             class="tall"
             .value=${this.manualRecipeInstructions}
-            @input=${(e) => this.manualRecipeInstructions = f(e)}
+            @input=${(e) => this.manualRecipeInstructions = $(e)}
           ></textarea>
         </label>
         <label class="span-2">
           Notes
           <textarea
             .value=${this.manualRecipeNotes}
-            @input=${(e) => this.manualRecipeNotes = f(e)}
+            @input=${(e) => this.manualRecipeNotes = $(e)}
           ></textarea>
         </label>
         <label class="check-row span-2">
@@ -994,7 +1099,7 @@ let c = class extends N {
     `;
   }
   renderGroceries() {
-    return l`
+    return c`
       <section class="grocery-layout">
         <aside class="list-rail">
           <div class="rail-head">
@@ -1008,17 +1113,17 @@ let c = class extends N {
             type="text"
             placeholder="New list"
             .value=${this.newListName}
-            @input=${(e) => this.newListName = f(e)}
+            @input=${(e) => this.newListName = $(e)}
           />
           <div class="list-buttons">
             ${this.shoppingLists.map(
-      (e) => l`
+      (e) => c`
                 <button
                   class=${this.selectedShoppingListId === e.id ? "selected" : ""}
                   @click=${() => this.selectShoppingList(e.id)}
                 >
                   <span>${e.name}</span>
-                  ${e.itemCount !== void 0 ? l`<small>${e.itemCount}</small>` : h}
+                  ${e.itemCount !== void 0 ? c`<small>${e.itemCount}</small>` : g}
                 </button>
               `
     )}
@@ -1026,7 +1131,7 @@ let c = class extends N {
         </aside>
 
         <section class="grocery-main">
-          ${this.selectedShoppingList ? l`
+          ${this.selectedShoppingList ? c`
                 <header>
                   <h3>${this.selectedShoppingList.name}</h3>
                   <button class="icon-button" title="Refresh list" @click=${() => this.selectedShoppingListId && this.loadShoppingList(this.selectedShoppingListId)}>
@@ -1038,7 +1143,7 @@ let c = class extends N {
                     type="text"
                     placeholder="Add grocery item"
                     .value=${this.groceryText}
-                    @input=${(e) => this.groceryText = f(e)}
+                    @input=${(e) => this.groceryText = $(e)}
                     @keydown=${this.onGroceryKeyDown}
                   />
                   <button class="primary" @click=${this.addShoppingItem} ?disabled=${!this.groceryText.trim()}>
@@ -1047,24 +1152,30 @@ let c = class extends N {
                   </button>
                 </div>
                 <div class="grocery-items">
-                  ${this.groceryItemsForDisplay(this.selectedShoppingList).map((e) => this.renderShoppingItem(e))}
+                  ${$t(
+      this.groceryItemsForDisplay(this.selectedShoppingList),
+      (e) => e.id,
+      (e) => this.renderShoppingItem(e)
+    )}
                 </div>
-              ` : l`<div class="empty-panel">Create or choose a grocery list.</div>`}
+              ` : c`<div class="empty-panel">Create or choose a grocery list.</div>`}
         </section>
       </section>
     `;
   }
   renderShoppingItem(e) {
-    return l`
-      <label class=${e.checked ? "grocery-item checked" : "grocery-item"}>
-        <input
-          type="checkbox"
-          .checked=${e.checked}
-          @change=${(t) => this.toggleShoppingItem(e, t.currentTarget.checked)}
-        />
-        <span>${e.title}</span>
+    return c`
+      <div class=${e.checked ? "grocery-item checked" : "grocery-item"}>
+        <label class="grocery-check">
+          <input
+            type="checkbox"
+            .checked=${e.checked}
+            @change=${(t) => this.toggleShoppingItem(e, t.currentTarget.checked)}
+          />
+          <span>${e.title}</span>
+        </label>
         <button class="delete-inline" @click=${(t) => this.deleteShoppingItem(t, e)}>Remove</button>
-      </label>
+      </div>
     `;
   }
   groceryItemsForDisplay(e) {
@@ -1074,15 +1185,15 @@ let c = class extends N {
     ];
   }
   renderAddDialog() {
-    if (!this.addDialogOpen || !this.selectedSlot) return h;
+    if (!this.addDialogOpen || !this.selectedSlot) return g;
     const e = this.filteredRecipes().slice(0, 36);
-    return l`
+    return c`
       <dialog class="dialog add" @cancel=${this.closeAddDialog}>
         <form method="dialog" class="dialog-panel">
           <header>
             <div>
               <span>Add meal</span>
-              <h3>${P(this.selectedSlot.entryType)} · ${this.formatDialogDate(this.selectedSlot.date)}</h3>
+              <h3>${z(this.selectedSlot.entryType)} · ${this.formatDialogDate(this.selectedSlot.date)}</h3>
             </div>
             <button type="button" class="plain" @click=${this.closeAddDialog}>Close</button>
           </header>
@@ -1106,13 +1217,13 @@ let c = class extends N {
               type="search"
               placeholder="Pasta, tacos, soup..."
               .value=${this.search}
-              @input=${(t) => this.search = f(t)}
+              @input=${(t) => this.search = $(t)}
             />
           </label>
 
           <div class="recipe-results">
             ${e.map(
-      (t) => l`
+      (t) => c`
                 ${this.renderMealOption(t)}
               `
     )}
@@ -1121,8 +1232,8 @@ let c = class extends N {
           <div class="note-area">
             <span>Or add a note</span>
             <div class="chips">
-              ${rt.map(
-      (t) => l`
+              ${wt.map(
+      (t) => c`
                   <button type="button" @click=${() => this.chooseNote(t)}>
                     ${t}
                   </button>
@@ -1136,7 +1247,7 @@ let c = class extends N {
                   type="text"
                   placeholder="Leftovers: Chicken dish"
                   .value=${this.noteTitle}
-                  @input=${(t) => this.updateNoteTitle(f(t))}
+                  @input=${(t) => this.updateNoteTitle($(t))}
                 />
               </label>
               <label>
@@ -1144,7 +1255,7 @@ let c = class extends N {
                 <textarea
                   placeholder="Optional detail"
                   .value=${this.noteText}
-                  @input=${(t) => this.updateNoteText(f(t))}
+                  @input=${(t) => this.updateNoteText($(t))}
                 ></textarea>
               </label>
             </div>
@@ -1161,23 +1272,23 @@ let c = class extends N {
     `;
   }
   renderRecipeDialog() {
-    if (!this.recipeDialogOpen || !this.selectedMeal && !this.selectedRecipeForDialog) return h;
+    if (!this.recipeDialogOpen || !this.selectedMeal && !this.selectedRecipeForDialog) return g;
     const e = this.recipeDetail, t = this.selectedMeal?.title ?? this.selectedRecipeForDialog?.name ?? "Recipe", i = this.selectedMeal?.entryType, a = !!(this.selectedMeal && !this.selectedMeal.recipeSlug && !this.selectedMeal.recipeId), r = e ?? this.selectedRecipeForDialog;
-    return l`
+    return c`
       <dialog class="dialog recipe" @cancel=${this.closeRecipeDialog}>
         <article class="dialog-panel cook-panel">
           <header>
             <div>
-              <span>${i ? P(i) : "Recipe"}</span>
+              <span>${i ? z(i) : "Recipe"}</span>
               <h3>${t}</h3>
             </div>
             <button type="button" class="plain" @click=${this.closeRecipeDialog}>Close</button>
           </header>
 
-          ${this.recipeLoading ? l`<div class="loading">Loading recipe...</div>` : l`
-              ${this.selectedMeal ? this.renderMealPlacementEditor() : h}
-              ${a ? this.renderNoteEditor() : l`
-                ${e?.image || this.selectedMeal?.image ? l`<img class="hero-image" src=${e?.image ?? this.selectedMeal?.image ?? ""} alt="" />` : h}
+          ${this.recipeLoading ? c`<div class="loading">Loading recipe...</div>` : c`
+              ${this.selectedMeal ? this.renderMealPlacementEditor() : g}
+              ${a ? this.renderNoteEditor() : c`
+                ${e?.image || this.selectedMeal?.image ? c`<img class="hero-image" src=${e?.image ?? this.selectedMeal?.image ?? ""} alt="" />` : g}
 
                 <div class="stats">
                   ${this.stat("Serves", e?.servings)}
@@ -1186,99 +1297,99 @@ let c = class extends N {
                   ${this.stat("Total", e?.totalTime)}
                 </div>
 
-                ${e?.ingredients.length ? l`
+                ${e?.ingredients.length ? c`
                       <section class="cook-section">
                         <h4>Ingredients</h4>
                         <ul>
-                          ${e.ingredients.map((s) => l`<li>${s}</li>`)}
+                          ${e.ingredients.map((s) => c`<li>${s}</li>`)}
                         </ul>
                       </section>
-                    ` : this.selectedMeal?.text ? l`<section class="cook-section note"><p>${this.selectedMeal.text}</p></section>` : h}
+                    ` : this.selectedMeal?.text ? c`<section class="cook-section note"><p>${this.selectedMeal.text}</p></section>` : g}
 
-                ${e?.instructions.length ? l`
+                ${e?.instructions.length ? c`
                       <section class="cook-section">
                         <h4>Instructions</h4>
                         <ol>
-                          ${e.instructions.map((s) => l`<li>${s}</li>`)}
+                          ${e.instructions.map((s) => c`<li>${s}</li>`)}
                         </ol>
                       </section>
-                    ` : h}
+                    ` : g}
 
-                ${e?.notes.length ? l`
+                ${e?.notes.length ? c`
                       <section class="cook-section">
                         <h4>Notes</h4>
                         <div class="recipe-notes">
                           ${e.notes.map(
-      (s) => l`
+      (s) => c`
                               <article>
-                                ${s.title ? l`<strong>${s.title}</strong>` : h}
+                                ${s.title ? c`<strong>${s.title}</strong>` : g}
                                 <p>${s.text}</p>
                               </article>
                             `
     )}
                         </div>
                       </section>
-                    ` : h}
+                    ` : g}
               `}
             `}
 
           <footer class="recipe-actions">
-            ${a ? l`
+            ${a ? c`
                   <button class="primary" @click=${this.saveNoteMeal} ?disabled=${this.mealSaving || !this.noteEditTitle.trim()}>
                     <ha-icon class=${this.mealSaving ? "spin" : ""} icon=${this.mealSaving ? "mdi:loading" : "mdi:content-save-outline"}></ha-icon>
                     <span>${this.mealSaving ? "Saving" : "Save note"}</span>
                   </button>
-                ` : h}
-            ${this.selectedMeal && !a ? l`
+                ` : g}
+            ${this.selectedMeal && !a ? c`
                   <button class="primary" @click=${this.saveMealPlacement} ?disabled=${this.mealSaving || !this.mealPlacementChanged()}>
                     <ha-icon class=${this.mealSaving ? "spin" : ""} icon=${this.mealSaving ? "mdi:loading" : "mdi:content-save-outline"}></ha-icon>
                     <span>${this.mealSaving ? "Saving" : "Save changes"}</span>
                   </button>
-                ` : h}
-            ${!this.selectedMeal && !a && r ? l`
+                ` : g}
+            ${!this.selectedMeal && !a && r ? c`
                   <button class="primary" @click=${this.planRecipeFromDialog} ?disabled=${!r.id}>
                     <ha-icon icon="mdi:calendar-plus"></ha-icon>
                     <span>Plan meal</span>
                   </button>
-                ` : h}
-            ${!a && e?.id && this.shoppingLists.length ? l`
-                  <select .value=${this.selectedShoppingListId ?? ""} @change=${(s) => this.selectShoppingList(f(s))}>
-                    ${this.shoppingLists.map((s) => l`<option .value=${s.id}>${s.name}</option>`)}
+                ` : g}
+            ${!a && e?.id && this.shoppingLists.length ? c`
+                  <select .value=${this.selectedShoppingListId ?? ""} @change=${(s) => this.selectShoppingList($(s))}>
+                    ${this.shoppingLists.map((s) => c`<option .value=${s.id}>${s.name}</option>`)}
                   </select>
                   <button class="primary" @click=${() => e?.id && this.addRecipeToGroceries(e.id)}>
                     <ha-icon icon="mdi:cart-plus"></ha-icon>
                     <span>Add ingredients</span>
                   </button>
-                ` : h}
-            ${this.selectedMeal ? l`<button class="danger" @click=${() => this.selectedMeal && this.confirmDeleteMeal(this.selectedMeal)}>Remove meal</button>` : h}
+                ` : g}
+            ${this.selectedMeal ? c`<button class="danger" @click=${() => this.selectedMeal && this.confirmDeleteMeal(this.selectedMeal)}>Remove meal</button>` : g}
           </footer>
         </article>
       </dialog>
     `;
   }
   renderNoteEditor() {
-    return l`
+    return c`
       <section class="note-editor">
         <label>
           Title
           <input
             type="text"
             .value=${this.noteEditTitle}
-            @input=${(e) => this.noteEditTitle = f(e)}
+            @input=${(e) => this.noteEditTitle = $(e)}
           />
         </label>
         <label>
           Note
           <textarea
             .value=${this.noteEditText}
-            @input=${(e) => this.noteEditText = f(e)}
+            @input=${(e) => this.noteEditText = $(e)}
           ></textarea>
         </label>
       </section>
     `;
   }
   renderMealPlacementEditor() {
-    return l`
+    return c`
       <section class="meal-placement-editor">
         <label>
           Date
@@ -1294,13 +1405,13 @@ let c = class extends N {
     `;
   }
   renderEntryTypeOptions(e) {
-    const t = E(e);
+    const t = P(e);
     return this.entryTypes().map(
-      (i) => l`<option value=${i} ?selected=${E(i) === t}>${P(i)}</option>`
+      (i) => c`<option value=${i} ?selected=${P(i) === t}>${z(i)}</option>`
     );
   }
   stat(e, t) {
-    return t ? l`<div><span>${e}</span><strong>${t}</strong></div>` : h;
+    return t ? c`<div><span>${e}</span><strong>${t}</strong></div>` : g;
   }
   async refreshAll() {
     if (!(!this.hass || this.loading)) {
@@ -1308,21 +1419,21 @@ let c = class extends N {
       try {
         await this.loadInfo(), await Promise.all([this.loadRecipes(), this.loadMealPlan(), this.loadShoppingLists()]);
       } catch (e) {
-        this.error = $(e, "Could not load Mealie data through Home Assistant.");
+        this.error = S(e, "Could not load Mealie data through Home Assistant.");
       } finally {
         this.loading = !1;
       }
     }
   }
   async loadInfo() {
-    const e = await this.callFamilyMealie("family_mealie/info"), t = v(e);
+    const e = await this.callFamilyMealie("family_mealie/info"), t = w(e);
     this.imageToken = o(t?.image_token) ?? o(t?.imageToken);
   }
   async loadRecipes() {
     const e = await this.callFamilyMealie("family_mealie/recipes", {
       limit: this.config.result_limit ?? 300
     });
-    this.recipes = _(e).map((t) => De(t, this.imageToken)).filter(Boolean);
+    this.recipes = T(e).map((t) => Oe(t, this.imageToken)).filter(Boolean);
   }
   async loadMealPlan() {
     const [e, t] = this.dateRange(), i = await this.callFamilyMealie("family_mealie/mealplans", {
@@ -1330,21 +1441,21 @@ let c = class extends N {
       end_date: t,
       limit: -1
     });
-    this.mealPlan = _(i).map((a) => ct(a, this.imageToken, this.entryTypes())).filter(Boolean);
+    this.mealPlan = T(i).map((a) => Dt(a, this.imageToken, this.entryTypes())).filter(Boolean);
   }
   async loadShoppingLists() {
-    const e = await this.callFamilyMealie("family_mealie/shopping_lists", { limit: -1 }), t = _(e).map(ee).filter(Boolean);
+    const e = await this.callFamilyMealie("family_mealie/shopping_lists", { limit: -1 }), t = T(e).map(se).filter(Boolean);
     this.shoppingLists = t, !this.selectedShoppingListId && t.length && (this.selectedShoppingListId = t[0].id), this.selectedShoppingListId && await this.loadShoppingList(this.selectedShoppingListId);
   }
   async loadShoppingList(e) {
-    const t = await this.callFamilyMealie("family_mealie/shopping_list", { list_id: e }), i = pt(t);
+    const t = await this.callFamilyMealie("family_mealie/shopping_list", { list_id: e }), i = Mt(t);
     i && (this.selectedShoppingList = i, this.selectedShoppingListId = i.id);
   }
   async fetchRecipeDetail(e) {
-    const t = ot(e) ? e.recipeSlug : e.slug;
+    const t = Rt(e) ? e.recipeSlug : e.slug;
     if (!t) return;
     const i = await this.callFamilyMealie("family_mealie/recipe", { slug: t });
-    return lt(i, this.imageToken);
+    return Tt(i, this.imageToken);
   }
   async importRecipeUrl(e) {
     e.preventDefault();
@@ -1360,7 +1471,7 @@ let c = class extends N {
           ingredient_parser: this.config.ingredient_parser ?? "auto"
         }), this.recipeUrl = "", this.saveDraftNow(), this.recipeMessage = "Recipe imported.", await this.loadRecipes();
       } catch (i) {
-        this.error = $(i, "Could not import recipe.");
+        this.error = S(i, "Could not import recipe.");
       } finally {
         this.recipeSaving = !1;
       }
@@ -1368,7 +1479,7 @@ let c = class extends N {
   }
   async createManualRecipe(e) {
     e.preventDefault();
-    const t = mt({
+    const t = Et({
       name: this.manualRecipeName,
       source: this.manualRecipeSource,
       description: this.manualRecipeDescription,
@@ -1387,7 +1498,7 @@ let c = class extends N {
       try {
         await this.callFamilyMealie("family_mealie/recipes/create", { payload: t }), this.clearManualRecipeForm(), this.saveDraftNow(), this.recipeMessage = "Recipe saved.", await this.loadRecipes();
       } catch (i) {
-        this.error = $(i, "Could not save recipe.");
+        this.error = S(i, "Could not save recipe.");
       } finally {
         this.recipeSaving = !1;
       }
@@ -1405,7 +1516,7 @@ let c = class extends N {
     try {
       await this.callFamilyMealie("family_mealie/mealplans/create", { payload: r }), this.closeAddDialog(), this.selectedSlot = void 0, this.noteTitle = "", this.noteText = "", this.selectedRecipe = void 0, this.saveDraftNow(), await this.loadMealPlan();
     } catch (s) {
-      this.error = $(s, "Could not add meal.");
+      this.error = S(s, "Could not add meal.");
     }
   }
   async saveNoteMeal(e) {
@@ -1414,7 +1525,7 @@ let c = class extends N {
     if (!t?.id) return;
     const i = this.noteEditTitle.trim();
     if (!i) return;
-    const a = this.noteEditText.trim(), r = $e(t, {
+    const a = this.noteEditText.trim(), r = Ae(t, {
       date: this.mealEditDate || t.date,
       entryType: this.canonicalEntryType(this.mealEditEntryType || t.entryType),
       title: i,
@@ -1431,7 +1542,7 @@ let c = class extends N {
         raw: { ...t.raw, ...r }
       }, await this.loadMealPlan(), this.closeRecipeDialog();
     } catch (s) {
-      this.error = $(s, "Could not save meal.");
+      this.error = S(s, "Could not save meal.");
     } finally {
       this.mealSaving = !1;
     }
@@ -1446,7 +1557,7 @@ let c = class extends N {
       try {
         await this.callFamilyMealie("family_mealie/mealplans/delete", { meal_id: e.id }), this.closeRecipeDialog(), await this.loadMealPlan();
       } catch (i) {
-        this.error = $(i, "Could not remove meal.");
+        this.error = S(i, "Could not remove meal.");
       }
   }
   async createShoppingList(e) {
@@ -1454,10 +1565,10 @@ let c = class extends N {
     const t = this.newListName.trim();
     if (t)
       try {
-        const i = await this.callFamilyMealie("family_mealie/shopping_lists/create", { name: t }), a = ee(i);
+        const i = await this.callFamilyMealie("family_mealie/shopping_lists/create", { name: t }), a = se(i);
         this.newListName = "", await this.loadShoppingLists(), a && await this.selectShoppingList(a.id);
       } catch (i) {
-        this.error = $(i, "Could not create grocery list.");
+        this.error = S(i, "Could not create grocery list.");
       }
   }
   async addShoppingItem(e) {
@@ -1477,15 +1588,15 @@ let c = class extends N {
     try {
       await this.callFamilyMealie("family_mealie/shopping_items/create", { payload: a }), this.groceryText = "", await this.loadShoppingList(t.id);
     } catch (r) {
-      this.error = $(r, "Could not add grocery item.");
+      this.error = S(r, "Could not add grocery item.");
     }
   }
   async toggleShoppingItem(e, t) {
-    const i = ut(e, t);
+    const i = It(e, t);
     try {
       await this.callFamilyMealie("family_mealie/shopping_items/update", { item_id: e.id, payload: i }), this.selectedShoppingListId && await this.loadShoppingList(this.selectedShoppingListId);
     } catch (a) {
-      this.error = $(a, "Could not update grocery item.");
+      this.error = S(a, "Could not update grocery item.");
     }
   }
   async deleteShoppingItem(e, t) {
@@ -1493,7 +1604,7 @@ let c = class extends N {
     try {
       await this.callFamilyMealie("family_mealie/shopping_items/delete", { item_id: t.id }), this.selectedShoppingListId && await this.loadShoppingList(this.selectedShoppingListId);
     } catch (i) {
-      this.error = $(i, "Could not remove grocery item.");
+      this.error = S(i, "Could not remove grocery item.");
     }
   }
   async addRecipeToGroceries(e) {
@@ -1505,7 +1616,7 @@ let c = class extends N {
           scale: 1
         }), await this.loadShoppingList(this.selectedShoppingListId), this.view = "groceries", this.closeRecipeDialog();
       } catch (t) {
-        this.error = $(t, "Could not add ingredients to grocery list.");
+        this.error = S(t, "Could not add ingredients to grocery list.");
       }
   }
   async callFamilyMealie(e, t = {}) {
@@ -1528,7 +1639,7 @@ let c = class extends N {
       try {
         await this.loadMealPlan();
       } catch (e) {
-        this.error = $(e, "Could not load meals for this week.");
+        this.error = S(e, "Could not load meals for this week.");
       }
     }
   }
@@ -1545,7 +1656,7 @@ let c = class extends N {
     this.selectedSlot = e, this.selectedRecipe = t, this.search = t?.name ?? "", this.noteTitle = "", this.noteText = "", this.addDialogOpen = !0;
   }
   defaultRecipePlanSlot() {
-    const [e, t] = this.dateRange(), i = M(K(/* @__PURE__ */ new Date())), a = this.entryTypes()[0] ?? L[0];
+    const [e, t] = this.dateRange(), i = E(Y(/* @__PURE__ */ new Date())), a = this.entryTypes()[0] ?? F[0];
     return {
       date: i >= e && i <= t ? i : e,
       entryType: a
@@ -1557,7 +1668,7 @@ let c = class extends N {
       try {
         this.recipeDetail = await this.fetchRecipeDetail(e);
       } catch (t) {
-        this.error = $(t, "Could not load recipe details.");
+        this.error = S(t, "Could not load recipe details.");
       } finally {
         this.recipeLoading = !1;
       }
@@ -1568,7 +1679,7 @@ let c = class extends N {
     try {
       this.recipeDetail = await this.fetchRecipeDetail(e);
     } catch (t) {
-      this.error = $(t, "Could not load recipe details.");
+      this.error = S(t, "Could not load recipe details.");
     } finally {
       this.recipeLoading = !1;
     }
@@ -1589,10 +1700,10 @@ let c = class extends N {
     this.noteText = e, e && (this.selectedRecipe = void 0);
   }
   onDateInput(e) {
-    this.selectedSlot && (this.selectedSlot = { ...this.selectedSlot, date: f(e) });
+    this.selectedSlot && (this.selectedSlot = { ...this.selectedSlot, date: $(e) });
   }
   onEntryTypeInput(e) {
-    this.selectedSlot && (this.selectedSlot = { ...this.selectedSlot, entryType: this.canonicalEntryType(f(e)) });
+    this.selectedSlot && (this.selectedSlot = { ...this.selectedSlot, entryType: this.canonicalEntryType($(e)) });
   }
   mealPlacementChanged() {
     const e = this.selectedMeal;
@@ -1644,12 +1755,12 @@ let c = class extends N {
   async moveMeal(e, t, i, a = !1) {
     const r = this.canonicalEntryType(i);
     if (!e.id || !t || !r || e.date === t && this.canonicalEntryType(e.entryType) === r) return;
-    const s = $e(e, { date: t, entryType: r });
+    const s = Ae(e, { date: t, entryType: r });
     this.mealSaving = !0;
     try {
       await this.callFamilyMealie("family_mealie/mealplans/update", { meal_id: e.id, payload: s }), this.selectedMeal = this.selectedMeal?.id === e.id ? { ...e, date: t, entryType: r, raw: { ...e.raw, ...s } } : this.selectedMeal, await this.loadMealPlan(), a && this.closeRecipeDialog();
     } catch (n) {
-      this.error = $(n, "Could not move meal.");
+      this.error = S(n, "Could not move meal.");
     } finally {
       this.mealSaving = !1;
     }
@@ -1662,32 +1773,32 @@ let c = class extends N {
     return e?.id ?? e?.slug ?? e?.name;
   }
   mealsFor(e, t) {
-    const i = E(t);
-    return this.mealPlan.filter((a) => a.date === e && E(a.entryType) === i);
+    const i = P(t);
+    return this.mealPlan.filter((a) => a.date === e && P(a.entryType) === i);
   }
   hasMealsForDay(e) {
     return this.mealPlan.some((t) => t.date === e);
   }
   daysToShow() {
-    const e = Math.max(1, Math.min(14, this.config.days ?? 7)), t = K(/* @__PURE__ */ new Date()), i = te(wt(t, this.weekStartIndex()), this.plannerOffsetDays);
-    return Array.from({ length: e }, (a, r) => te(i, r));
+    const e = Math.max(1, Math.min(14, this.config.days ?? 7)), t = Y(/* @__PURE__ */ new Date()), i = ne(Ft(t, this.weekStartIndex()), this.plannerOffsetDays);
+    return Array.from({ length: e }, (a, r) => ne(i, r));
   }
   rangeStepDays() {
     return Math.max(1, Math.min(14, this.config.days ?? 7));
   }
   entryTypes() {
     const e = this.config.entry_types?.map((t) => t.trim()).filter(Boolean) ?? [];
-    return e.length ? e : L;
+    return e.length ? e : F;
   }
   canonicalEntryType(e) {
-    return Me(e, this.entryTypes());
+    return Ne(e, this.entryTypes());
   }
   weekStartIndex() {
-    return _t(this.config.week_start);
+    return jt(this.config.week_start);
   }
   dateRange() {
     const e = this.daysToShow();
-    return [M(e[0]), M(e[e.length - 1])];
+    return [E(e[0]), E(e[e.length - 1])];
   }
   subtitle() {
     if (this.view === "recipes") return `${this.recipes.length} recipes`;
@@ -1702,7 +1813,7 @@ let c = class extends N {
     return new Intl.DateTimeFormat(this.hass?.config?.language, { month: "short", day: "numeric" }).format(e);
   }
   formatDialogDate(e) {
-    return new Intl.DateTimeFormat(this.hass?.config?.language, { weekday: "long", month: "long", day: "numeric" }).format(St(e));
+    return new Intl.DateTimeFormat(this.hass?.config?.language, { weekday: "long", month: "long", day: "numeric" }).format(Ht(e));
   }
   restartRefreshTimer() {
     window.clearInterval(this.refreshTimer);
@@ -1722,7 +1833,7 @@ let c = class extends N {
   restoreDraft() {
     if (this.draftRestored) return;
     this.draftRestored = !0;
-    const e = $t(this.draftStorageKey());
+    const e = Ut(this.draftStorageKey());
     e && (e.view && ["planner", "recipes", "groceries"].includes(e.view) && (this.view = e.view), typeof e.plannerOffsetDays == "number" && (this.plannerOffsetDays = e.plannerOffsetDays), typeof e.search == "string" && (this.search = e.search), typeof e.recipeCreateOpen == "boolean" && (this.recipeCreateOpen = e.recipeCreateOpen), (e.recipeCreateMode === "url" || e.recipeCreateMode === "manual") && (this.recipeCreateMode = e.recipeCreateMode), typeof e.recipeUrl == "string" && (this.recipeUrl = e.recipeUrl), typeof e.manualRecipeName == "string" && (this.manualRecipeName = e.manualRecipeName), typeof e.manualRecipeSource == "string" && (this.manualRecipeSource = e.manualRecipeSource), typeof e.manualRecipeDescription == "string" && (this.manualRecipeDescription = e.manualRecipeDescription), typeof e.manualRecipeServings == "string" && (this.manualRecipeServings = e.manualRecipeServings), typeof e.manualRecipePrep == "string" && (this.manualRecipePrep = e.manualRecipePrep), typeof e.manualRecipeCook == "string" && (this.manualRecipeCook = e.manualRecipeCook), typeof e.manualRecipeTotal == "string" && (this.manualRecipeTotal = e.manualRecipeTotal), typeof e.manualRecipeIngredients == "string" && (this.manualRecipeIngredients = e.manualRecipeIngredients), typeof e.manualRecipeInstructions == "string" && (this.manualRecipeInstructions = e.manualRecipeInstructions), typeof e.manualRecipeNotes == "string" && (this.manualRecipeNotes = e.manualRecipeNotes), typeof e.manualParseIngredients == "boolean" && (this.manualParseIngredients = e.manualParseIngredients), e.selectedSlot?.date && e.selectedSlot.entryType && (this.selectedSlot = {
       date: e.selectedSlot.date,
       entryType: this.canonicalEntryType(e.selectedSlot.entryType)
@@ -1732,7 +1843,7 @@ let c = class extends N {
     window.clearTimeout(this.draftSaveTimer), this.draftSaveTimer = window.setTimeout(() => this.saveDraftNow(), 150);
   }
   saveDraftNow() {
-    window.clearTimeout(this.draftSaveTimer), bt(this.draftStorageKey(), {
+    window.clearTimeout(this.draftSaveTimer), zt(this.draftStorageKey(), {
       view: this.view,
       plannerOffsetDays: this.plannerOffsetDays,
       search: this.search,
@@ -1757,10 +1868,10 @@ let c = class extends N {
     });
   }
   draftStorageKey() {
-    return `${st}:${this.config.entry_id ?? this.config.title ?? "default"}`;
+    return `${St}:${this.config.entry_id ?? this.config.title ?? "default"}`;
   }
 };
-c.styles = Ie`
+p.styles = Fe`
     :host {
       display: block;
       color: var(--primary-text-color);
@@ -2388,7 +2499,7 @@ c.styles = Ie`
 
     .grocery-item {
       display: grid;
-      grid-template-columns: 32px 1fr auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
       min-height: 58px;
@@ -2399,6 +2510,16 @@ c.styles = Ie`
       color: var(--primary-text-color);
       font-size: 18px;
       font-weight: 750;
+    }
+
+    .grocery-check {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      color: var(--primary-text-color);
+      cursor: pointer;
     }
 
     .grocery-item.checked {
@@ -2727,149 +2848,149 @@ c.styles = Ie`
       }
     }
   `;
-p([
-  Te({ attribute: !1 })
-], c.prototype, "hass", 2);
-p([
-  d()
-], c.prototype, "config", 2);
-p([
-  d()
-], c.prototype, "view", 2);
-p([
-  d()
-], c.prototype, "recipes", 2);
-p([
-  d()
-], c.prototype, "mealPlan", 2);
-p([
-  d()
-], c.prototype, "shoppingLists", 2);
-p([
-  d()
-], c.prototype, "selectedShoppingList", 2);
-p([
-  d()
-], c.prototype, "selectedShoppingListId", 2);
-p([
-  d()
-], c.prototype, "imageToken", 2);
-p([
-  d()
-], c.prototype, "loading", 2);
-p([
-  d()
-], c.prototype, "error", 2);
-p([
-  d()
-], c.prototype, "addDialogOpen", 2);
-p([
-  d()
-], c.prototype, "recipeDialogOpen", 2);
-p([
-  d()
-], c.prototype, "selectedSlot", 2);
-p([
-  d()
-], c.prototype, "selectedMeal", 2);
-p([
-  d()
-], c.prototype, "mealEditDate", 2);
-p([
-  d()
-], c.prototype, "mealEditEntryType", 2);
-p([
-  d()
-], c.prototype, "mealSaving", 2);
-p([
-  d()
-], c.prototype, "selectedRecipeForDialog", 2);
-p([
-  d()
-], c.prototype, "recipeDetail", 2);
-p([
-  d()
-], c.prototype, "recipeLoading", 2);
-p([
-  d()
-], c.prototype, "search", 2);
-p([
-  d()
-], c.prototype, "noteTitle", 2);
-p([
-  d()
-], c.prototype, "noteText", 2);
-p([
-  d()
-], c.prototype, "noteEditTitle", 2);
-p([
-  d()
-], c.prototype, "noteEditText", 2);
-p([
-  d()
-], c.prototype, "selectedRecipe", 2);
-p([
-  d()
-], c.prototype, "plannerOffsetDays", 2);
-p([
-  d()
-], c.prototype, "recipeCreateOpen", 2);
-p([
-  d()
-], c.prototype, "recipeCreateMode", 2);
-p([
-  d()
-], c.prototype, "recipeUrl", 2);
-p([
-  d()
-], c.prototype, "manualRecipeName", 2);
-p([
-  d()
-], c.prototype, "manualRecipeSource", 2);
-p([
-  d()
-], c.prototype, "manualRecipeDescription", 2);
-p([
-  d()
-], c.prototype, "manualRecipeServings", 2);
-p([
-  d()
-], c.prototype, "manualRecipePrep", 2);
-p([
-  d()
-], c.prototype, "manualRecipeCook", 2);
-p([
-  d()
-], c.prototype, "manualRecipeTotal", 2);
-p([
-  d()
-], c.prototype, "manualRecipeIngredients", 2);
-p([
-  d()
-], c.prototype, "manualRecipeInstructions", 2);
-p([
-  d()
-], c.prototype, "manualRecipeNotes", 2);
-p([
-  d()
-], c.prototype, "manualParseIngredients", 2);
-p([
-  d()
-], c.prototype, "recipeSaving", 2);
-p([
-  d()
-], c.prototype, "recipeMessage", 2);
-p([
-  d()
-], c.prototype, "groceryText", 2);
-p([
-  d()
-], c.prototype, "newListName", 2);
-c = p([
-  Qe("family-mealie-planner-card")
-], c);
-function De(e, t) {
-  const i = v(e);
+h([
+  Le({ attribute: !1 })
+], p.prototype, "hass", 2);
+h([
+  u()
+], p.prototype, "config", 2);
+h([
+  u()
+], p.prototype, "view", 2);
+h([
+  u()
+], p.prototype, "recipes", 2);
+h([
+  u()
+], p.prototype, "mealPlan", 2);
+h([
+  u()
+], p.prototype, "shoppingLists", 2);
+h([
+  u()
+], p.prototype, "selectedShoppingList", 2);
+h([
+  u()
+], p.prototype, "selectedShoppingListId", 2);
+h([
+  u()
+], p.prototype, "imageToken", 2);
+h([
+  u()
+], p.prototype, "loading", 2);
+h([
+  u()
+], p.prototype, "error", 2);
+h([
+  u()
+], p.prototype, "addDialogOpen", 2);
+h([
+  u()
+], p.prototype, "recipeDialogOpen", 2);
+h([
+  u()
+], p.prototype, "selectedSlot", 2);
+h([
+  u()
+], p.prototype, "selectedMeal", 2);
+h([
+  u()
+], p.prototype, "mealEditDate", 2);
+h([
+  u()
+], p.prototype, "mealEditEntryType", 2);
+h([
+  u()
+], p.prototype, "mealSaving", 2);
+h([
+  u()
+], p.prototype, "selectedRecipeForDialog", 2);
+h([
+  u()
+], p.prototype, "recipeDetail", 2);
+h([
+  u()
+], p.prototype, "recipeLoading", 2);
+h([
+  u()
+], p.prototype, "search", 2);
+h([
+  u()
+], p.prototype, "noteTitle", 2);
+h([
+  u()
+], p.prototype, "noteText", 2);
+h([
+  u()
+], p.prototype, "noteEditTitle", 2);
+h([
+  u()
+], p.prototype, "noteEditText", 2);
+h([
+  u()
+], p.prototype, "selectedRecipe", 2);
+h([
+  u()
+], p.prototype, "plannerOffsetDays", 2);
+h([
+  u()
+], p.prototype, "recipeCreateOpen", 2);
+h([
+  u()
+], p.prototype, "recipeCreateMode", 2);
+h([
+  u()
+], p.prototype, "recipeUrl", 2);
+h([
+  u()
+], p.prototype, "manualRecipeName", 2);
+h([
+  u()
+], p.prototype, "manualRecipeSource", 2);
+h([
+  u()
+], p.prototype, "manualRecipeDescription", 2);
+h([
+  u()
+], p.prototype, "manualRecipeServings", 2);
+h([
+  u()
+], p.prototype, "manualRecipePrep", 2);
+h([
+  u()
+], p.prototype, "manualRecipeCook", 2);
+h([
+  u()
+], p.prototype, "manualRecipeTotal", 2);
+h([
+  u()
+], p.prototype, "manualRecipeIngredients", 2);
+h([
+  u()
+], p.prototype, "manualRecipeInstructions", 2);
+h([
+  u()
+], p.prototype, "manualRecipeNotes", 2);
+h([
+  u()
+], p.prototype, "manualParseIngredients", 2);
+h([
+  u()
+], p.prototype, "recipeSaving", 2);
+h([
+  u()
+], p.prototype, "recipeMessage", 2);
+h([
+  u()
+], p.prototype, "groceryText", 2);
+h([
+  u()
+], p.prototype, "newListName", 2);
+p = h([
+  ct("family-mealie-planner-card")
+], p);
+function Oe(e, t) {
+  const i = w(e);
   if (!i) return;
   const a = o(i.name) ?? o(i.recipe_name) ?? o(i.title);
   if (!a) return;
@@ -2879,56 +3000,56 @@ function De(e, t) {
     slug: r,
     name: a,
     description: o(i.description),
-    image: ke(s, i, t),
+    image: Ue(s, i, t),
     raw: i
   };
 }
-function ot(e) {
+function Rt(e) {
   return "entryType" in e;
 }
-function lt(e, t) {
-  const i = v(e), a = De(i, t);
+function Tt(e, t) {
+  const i = w(e), a = Oe(i, t);
   if (!(!i || !a))
     return {
       ...a,
-      servings: ft(
+      servings: Pt(
         i.recipe_servings ?? i.recipeServings ?? i.servings,
         i.recipe_yield ?? i.recipeYield
       ),
-      prepTime: Q(i.prep_time ?? i.prepTime),
-      cookTime: Q(i.cook_time ?? i.cookTime),
-      totalTime: Q(i.total_time ?? i.totalTime),
-      ingredients: yt(i.recipe_ingredient ?? i.ingredients ?? i.recipeIngredient),
-      instructions: vt(i.recipe_instructions ?? i.instructions ?? i.recipeInstructions),
-      notes: xt(i.notes ?? i.recipe_notes ?? i.recipeNotes)
+      prepTime: re(i.prep_time ?? i.prepTime),
+      cookTime: re(i.cook_time ?? i.cookTime),
+      totalTime: re(i.total_time ?? i.totalTime),
+      ingredients: Lt(i.recipe_ingredient ?? i.ingredients ?? i.recipeIngredient),
+      instructions: Ot(i.recipe_instructions ?? i.instructions ?? i.recipeInstructions),
+      notes: Nt(i.notes ?? i.recipe_notes ?? i.recipeNotes)
     };
 }
-function ct(e, t, i = L) {
-  const a = v(e);
+function Dt(e, t, i = F) {
+  const a = w(e);
   if (!a) return;
-  const r = v(a.recipe), s = o(a.date) ?? o(a.mealplan_date) ?? o(a.mealplanDate), n = Me(
+  const r = w(a.recipe), s = o(a.date) ?? o(a.mealplan_date) ?? o(a.mealplanDate), n = Ne(
     o(a.entryType) ?? o(a.entry_type) ?? o(a.mealType) ?? o(a.meal_type) ?? "",
     i
-  ), m = o(a.text) ?? o(a.note), u = o(a.title) || o(r?.name) || m || "Meal", y = o(a.recipeSlug) ?? o(a.recipe_slug) ?? o(r?.slug);
+  ), d = o(a.text) ?? o(a.note), l = o(a.title) || o(r?.name) || d || "Meal", y = o(a.recipeSlug) ?? o(a.recipe_slug) ?? o(r?.slug);
   if (!(!s || !n))
     return {
       id: a.id,
       date: s.slice(0, 10),
       entryType: n,
-      title: u,
-      text: m,
+      title: l,
+      text: d,
       recipeId: o(a.recipeId) ?? o(a.recipe_id) ?? o(r?.id),
       recipeSlug: y,
-      image: ke(o(a.recipeId) ?? o(a.recipe_id) ?? o(r?.id), r, t),
+      image: Ue(o(a.recipeId) ?? o(a.recipe_id) ?? o(r?.id), r, t),
       raw: a
     };
 }
-function ee(e) {
-  const t = v(e);
+function se(e) {
+  const t = w(e);
   if (!t) return;
   const i = o(t.id);
   if (!i) return;
-  const a = o(t.name) ?? "Grocery List", r = _(t.listItems ?? t.list_items);
+  const a = o(t.name) ?? "Grocery List", r = T(t.listItems ?? t.list_items);
   return {
     id: i,
     name: a,
@@ -2936,36 +3057,36 @@ function ee(e) {
     raw: t
   };
 }
-function pt(e) {
-  const t = ee(e), i = v(e);
+function Mt(e) {
+  const t = se(e), i = w(e);
   if (!(!t || !i))
     return {
       ...t,
-      items: _(i.listItems ?? i.list_items).map(dt).filter(Boolean)
+      items: T(i.listItems ?? i.list_items).map(At).filter(Boolean)
     };
 }
-function dt(e) {
-  const t = v(e);
+function At(e) {
+  const t = w(e);
   if (!t) return;
   const i = o(t.id), a = o(t.shoppingListId) ?? o(t.shopping_list_id);
   if (!(!i || !a))
     return {
       id: i,
       shoppingListId: a,
-      title: ht(t),
+      title: kt(t),
       checked: !!t.checked,
       raw: t
     };
 }
-function ht(e) {
+function kt(e) {
   const t = o(e.display);
   if (t) return t;
-  const i = o(e.quantity), a = o(v(e.unit)?.name) ?? o(e.unit), r = o(v(e.food)?.name) ?? o(e.food), s = o(e.note);
+  const i = o(e.quantity), a = o(w(e.unit)?.name) ?? o(e.unit), r = o(w(e.food)?.name) ?? o(e.food), s = o(e.note);
   return [i && i !== "0" ? i : void 0, a, r, s].filter(Boolean).join(" ") || "Item";
 }
-function ut(e, t) {
+function It(e, t) {
   const i = e.raw;
-  return le({
+  return ue({
     shoppingListId: e.shoppingListId,
     checked: t,
     position: i.position ?? 0,
@@ -2981,9 +3102,9 @@ function ut(e, t) {
     recipeReferences: i.recipeReferences ?? i.recipe_references ?? []
   });
 }
-function $e(e, t) {
-  const i = e.raw, a = e.recipeId ?? i.recipeId ?? i.recipe_id ?? v(i.recipe)?.id;
-  return le({
+function Ae(e, t) {
+  const i = e.raw, a = e.recipeId ?? i.recipeId ?? i.recipe_id ?? w(i.recipe)?.id;
+  return ue({
     id: e.id ?? i.id,
     groupId: i.groupId ?? i.group_id,
     userId: i.userId ?? i.user_id,
@@ -2994,18 +3115,18 @@ function $e(e, t) {
     recipeId: a ?? null
   }, ["text"]);
 }
-function mt(e) {
-  const t = gt(e.servings), i = J(e.ingredients), a = J(e.instructions), r = J(e.notes);
+function Et(e) {
+  const t = Ct(e.servings), i = ie(e.ingredients), a = ie(e.instructions), r = ie(e.notes);
   return {
     name: e.name.trim(),
-    ...le({
+    ...ue({
       description: e.description.trim(),
       orgURL: e.source.trim(),
       recipeServings: t,
       recipeYield: t ? `${t} servings` : void 0,
-      prepTime: Z(e.prep),
-      cookTime: Z(e.cook),
-      totalTime: Z(e.total),
+      prepTime: ae(e.prep),
+      cookTime: ae(e.cook),
+      totalTime: ae(e.total),
       recipeIngredient: i.length ? i.map((s) => ({
         note: s,
         display: s,
@@ -3026,53 +3147,53 @@ function mt(e) {
     })
   };
 }
-function J(e) {
+function ie(e) {
   return e.split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
 }
-function gt(e) {
+function Ct(e) {
   const t = Number(e);
   return Number.isFinite(t) && t > 0 ? t : void 0;
 }
-function Z(e) {
+function ae(e) {
   const t = e.trim();
   if (t)
     return /^\d+$/.test(t) ? `${t} min` : t;
 }
-function ft(e, t) {
+function Pt(e, t) {
   const i = o(e), a = o(t);
   return i && a && a !== i ? a.toLocaleLowerCase().includes("serv") ? a : `${i} (${a})` : i ?? a;
 }
-function yt(e) {
-  return _(e).map((t) => {
+function Lt(e) {
+  return T(e).map((t) => {
     if (typeof t == "string") return t;
-    const i = v(t);
+    const i = w(t);
     if (!i) return;
     const a = o(i.display);
     if (a) return a;
-    const r = o(i.note), s = o(v(i.food)?.name) ?? o(i.food), n = o(i.quantity), m = o(v(i.unit)?.name) ?? o(i.unit);
-    return [n && n !== "0" ? n : void 0, m, s, r].filter(Boolean).join(" ");
+    const r = o(i.note), s = o(w(i.food)?.name) ?? o(i.food), n = o(i.quantity), d = o(w(i.unit)?.name) ?? o(i.unit);
+    return [n && n !== "0" ? n : void 0, d, s, r].filter(Boolean).join(" ");
   }).filter((t) => !!t);
 }
-function vt(e) {
-  return _(e).flatMap((t) => {
-    if (typeof t == "string") return [U(t)];
-    const i = v(t), a = o(i?.text) ?? o(i?.instruction) ?? o(i?.summary);
-    return a ? [U(a)] : [];
+function Ot(e) {
+  return T(e).flatMap((t) => {
+    if (typeof t == "string") return [B(t)];
+    const i = w(t), a = o(i?.text) ?? o(i?.instruction) ?? o(i?.summary);
+    return a ? [B(a)] : [];
   }).filter(Boolean);
 }
-function xt(e) {
+function Nt(e) {
   if (typeof e == "string") {
-    const t = U(e);
+    const t = B(e);
     return t ? [{ text: t }] : [];
   }
-  return _(e).map((t) => {
+  return T(e).map((t) => {
     if (typeof t == "string") {
-      const n = U(t);
+      const n = B(t);
       return n ? { text: n } : void 0;
     }
-    const i = v(t);
+    const i = w(t);
     if (!i) return;
-    const a = o(i.title) ?? o(i.name), r = o(i.text) ?? o(i.note) ?? o(i.summary), s = r ? U(r) : void 0;
+    const a = o(i.title) ?? o(i.name), r = o(i.text) ?? o(i.note) ?? o(i.summary), s = r ? B(r) : void 0;
     if (!(!s && !a))
       return {
         title: s ? a : void 0,
@@ -3080,97 +3201,97 @@ function xt(e) {
       };
   }).filter((t) => !!t?.text);
 }
-function _(e) {
+function T(e) {
   if (Array.isArray(e)) return e;
-  const t = v(e);
+  const t = w(e);
   if (!t) return [];
   const i = [t.items, t.data, t.results, t.recipe, t.recipes, t.mealplans, t.mealplan];
   for (const a of i)
     if (Array.isArray(a)) return a;
   return [];
 }
-function v(e) {
+function w(e) {
   if (!(!e || typeof e != "object" || Array.isArray(e)))
     return e;
 }
-function le(e, t = []) {
+function ue(e, t = []) {
   return Object.fromEntries(
     Object.entries(e).filter(([i, a]) => a !== void 0 && (a !== "" || t.includes(i)))
   );
 }
-function $t(e) {
+function Ut(e) {
   try {
     const t = window.localStorage.getItem(e);
     if (!t) return;
     const i = JSON.parse(t);
-    return v(i);
+    return w(i);
   } catch {
     return;
   }
 }
-function bt(e, t) {
+function zt(e, t) {
   try {
     window.localStorage.setItem(e, JSON.stringify(t));
   } catch {
   }
 }
-function Me(e, t) {
-  const i = e.trim(), a = E(i);
-  return t.find((s) => E(s) === a) ?? i.toLocaleLowerCase();
+function Ne(e, t) {
+  const i = e.trim(), a = P(i);
+  return t.find((s) => P(s) === a) ?? i.toLocaleLowerCase();
 }
-function E(e) {
+function P(e) {
   return e.trim().toLocaleLowerCase().replace(/[\s_-]+/g, "_");
 }
 function o(e) {
   if (!(e == null || e === ""))
     return String(e);
 }
-function ke(e, t, i) {
+function Ue(e, t, i) {
   const a = o(t?.image) ?? o(t?.image_url) ?? o(t?.recipe_image);
   return a && /^https?:\/\//i.test(a) ? a : e && a && i ? `/api/family_mealie/recipe/${encodeURIComponent(e)}/image?token=${encodeURIComponent(i)}` : void 0;
 }
-function Q(e) {
+function re(e) {
   const t = o(e);
   if (t)
     return /^\d+$/.test(t) ? `${t} min` : t.replace(/^PT/i, "").replace(/(\d+)H/i, "$1 hr ").replace(/(\d+)M/i, "$1 min").trim();
 }
-function U(e) {
+function B(e) {
   const t = document.createElement("div");
   return t.innerHTML = e, t.textContent?.trim() ?? e;
 }
-function f(e) {
+function $(e) {
   return e.currentTarget.value;
 }
-function K(e) {
+function Y(e) {
   return new Date(e.getFullYear(), e.getMonth(), e.getDate());
 }
-function te(e, t) {
+function ne(e, t) {
   const i = new Date(e);
   return i.setDate(i.getDate() + t), i;
 }
-function wt(e, t) {
-  const i = K(e), a = (i.getDay() - t + 7) % 7;
-  return te(i, -a);
+function Ft(e, t) {
+  const i = Y(e), a = (i.getDay() - t + 7) % 7;
+  return ne(i, -a);
 }
-function M(e) {
+function E(e) {
   const t = e.getFullYear(), i = String(e.getMonth() + 1).padStart(2, "0"), a = String(e.getDate()).padStart(2, "0");
   return `${t}-${i}-${a}`;
 }
-function St(e) {
+function Ht(e) {
   const [t, i, a] = e.split("-").map(Number);
   return new Date(t, i - 1, a);
 }
-function _t(e) {
+function jt(e) {
   if (typeof e == "number" && Number.isInteger(e)) return (e % 7 + 7) % 7;
   const t = String(e ?? "sunday").trim().toLocaleLowerCase(), i = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"], a = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"], r = i.indexOf(t);
   if (r >= 0) return r;
   const s = a.indexOf(t);
   return s >= 0 ? s : 0;
 }
-function P(e) {
+function z(e) {
   return e.replace(/[_-]/g, " ").replace(/\b\w/g, (t) => t.toLocaleUpperCase());
 }
-function $(e, t) {
+function S(e, t) {
   return e instanceof Error ? e.message : typeof e == "object" && e && "message" in e ? String(e.message) : t;
 }
 window.customCards = window.customCards ?? [];
@@ -3180,6 +3301,6 @@ window.customCards.push({
   description: "Kitchen-tablet meal planning for Mealie through a Home Assistant backend bridge."
 });
 export {
-  c as FamilyMealiePlannerCard
+  p as FamilyMealiePlannerCard
 };
 //# sourceMappingURL=family-mealie-planner-card.js.map

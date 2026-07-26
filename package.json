@@ -1,6 +1,6 @@
 {
   "name": "family-mealie-planner-card",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "A kitchen-tablet Home Assistant Lovelace card for planning family meals with Mealie.",
   "type": "module",
   "scripts": {

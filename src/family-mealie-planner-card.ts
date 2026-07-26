@@ -1,5 +1,6 @@
 import { LitElement, css, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { repeat } from "lit/directives/repeat.js";
 
 interface HomeAssistant {
   callWS: <T = unknown>(message: Record<string, unknown>) => Promise<T>;
@@ -678,7 +679,11 @@ export class FamilyMealiePlannerCard extends LitElement {
                   </button>
                 </div>
                 <div class="grocery-items">
-                  ${this.groceryItemsForDisplay(this.selectedShoppingList).map((item) => this.renderShoppingItem(item))}
+                  ${repeat(
+                    this.groceryItemsForDisplay(this.selectedShoppingList),
+                    (item) => item.id,
+                    (item) => this.renderShoppingItem(item),
+                  )}
                 </div>
               `
             : html`<div class="empty-panel">Create or choose a grocery list.</div>`}
@@ -689,15 +694,17 @@ export class FamilyMealiePlannerCard extends LitElement {
 
   private renderShoppingItem(item: ShoppingListItem) {
     return html`
-      <label class=${item.checked ? "grocery-item checked" : "grocery-item"}>
-        <input
-          type="checkbox"
-          .checked=${item.checked}
-          @change=${(event: Event) => this.toggleShoppingItem(item, (event.currentTarget as HTMLInputElement).checked)}
-        />
-        <span>${item.title}</span>
+      <div class=${item.checked ? "grocery-item checked" : "grocery-item"}>
+        <label class="grocery-check">
+          <input
+            type="checkbox"
+            .checked=${item.checked}
+            @change=${(event: Event) => this.toggleShoppingItem(item, (event.currentTarget as HTMLInputElement).checked)}
+          />
+          <span>${item.title}</span>
+        </label>
         <button class="delete-inline" @click=${(event: Event) => this.deleteShoppingItem(event, item)}>Remove</button>
-      </label>
+      </div>
     `;
   }
 
@@ -2412,7 +2419,7 @@ export class FamilyMealiePlannerCard extends LitElement {
 
     .grocery-item {
       display: grid;
-      grid-template-columns: 32px 1fr auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 10px;
       min-height: 58px;
@@ -2423,6 +2430,16 @@ export class FamilyMealiePlannerCard extends LitElement {
       color: var(--primary-text-color);
       font-size: 18px;
       font-weight: 750;
+    }
+
+    .grocery-check {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      color: var(--primary-text-color);
+      cursor: pointer;
     }
 
     .grocery-item.checked {
